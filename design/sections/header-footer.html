@@ -1,0 +1,57 @@
+<!-- @dsCard group="Sections" name="Header &amp; footer" subtitle="" width="1440" height="460" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — Header &amp; footer</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/components.css">
+<style>
+  body { margin:0; background:var(--ps-canvas); color:var(--ps-ink); font:var(--ps-body); -webkit-font-smoothing:antialiased; }
+  .pv-note { padding: var(--ps-5) var(--ps-gutter); font: var(--ps-small); color: var(--ps-ink-muted); border-top: 1px solid var(--ps-border-cool); }
+  .pv-note b { color: var(--ps-ink); }
+  .pv-note code { color: var(--ps-teal); font-weight:700; }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <img class="brand__mark" src="../assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
+      PurrSafe
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="#how">How it works</a>
+      <a href="#proof">In the app</a>
+      <a href="#trust">Safety</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn btn--primary btn--sm" href="#get">Get the app</a>
+    </nav>
+  </div>
+</header>
+<div style="height:180px"></div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <a class="brand" href="#top">
+        <img class="brand__mark" src="../assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
+        PurrSafe
+      </a>
+      <nav class="footer__links" aria-label="Footer">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+    <p class="footer__legal">
+      © 2026 PurrSafe. Private beta. PurrSafe is a record-keeping tool and does not
+      provide veterinary advice. App screenshots are unmodified captures of the current build.
+    </p>
+  </div>
+</footer>
+<p class="pv-note">Sticky, 72px, canvas at 88% with a 12px blur so cards read through it. Nav links hide below 820px leaving only the CTA — acceptable for a four-link single-scroll page. <b>Specificity trap:</b> <code>.nav a { color }</code> repaints the CTA label grey (1.1:1) unless guarded. Footer is <code>--ps-canvas-deep</code>; its legal line uses <code>--ps-ink-muted</code> <code>#636363</code>, which is why that token had to clear AA on the deep band.</p>
+</body>
+</html>

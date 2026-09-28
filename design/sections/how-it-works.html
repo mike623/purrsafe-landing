@@ -1,0 +1,58 @@
+<!-- @dsCard group="Sections" name="How it works" subtitle="" width="1440" height="900" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — How it works</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/components.css">
+<style>
+  body { margin:0; background:var(--ps-canvas); color:var(--ps-ink); font:var(--ps-body); -webkit-font-smoothing:antialiased; }
+  .pv-note { padding: var(--ps-5) var(--ps-gutter); font: var(--ps-small); color: var(--ps-ink-muted); border-top: 1px solid var(--ps-border-cool); }
+  .pv-note b { color: var(--ps-ink); }
+  .pv-note code { color: var(--ps-teal); font-weight:700; }
+</style>
+</head>
+<body>
+<section id="how" class="band--deep">
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">How it works</span>
+        <h2>Capture &rarr; Understand &rarr; Remember</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="step__num" aria-hidden="true">1</span>
+          <h3>Capture</h3>
+          <p>Pick the pet, pick the type, add a line or a photo. It takes seconds.</p>
+          <div class="step__shot">
+            <img src="../assets/app-add-event@2x.png" width="880" height="1912"
+                 alt="The PurrSafe add-memory sheet: a pet selector with Mochi chosen, memory type chips for Food, Health, Weight, Play and Note with Weight selected, a title field, and a body-weight input in kilograms.">
+          </div>
+        </div>
+        <div class="step">
+          <span class="step__num" aria-hidden="true">2</span>
+          <h3>Understand</h3>
+          <p>Each entry is typed and tagged, so the log stays structured without extra work.</p>
+          <div class="step__shot">
+            <img src="../assets/app-memory-feed@2x.png" width="880" height="1912"
+                 alt="The PurrSafe memory feed filtered by pet and by category chips for Food, Health, Vet and Behavior.">
+          </div>
+        </div>
+        <div class="step">
+          <span class="step__num" aria-hidden="true">3</span>
+          <h3>Remember</h3>
+          <p>Ask a question later. The assistant answers from that cat&rsquo;s memories only.</p>
+          <div class="step__shot">
+            <img src="../assets/app-ask-ai@2x.png" width="880" height="1912"
+                 alt="The PurrSafe Ask AI screen, headed “Whose story today?”, listing Mochi with a resumable session and LUNU with a start button.">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+<p class="pv-note"><code>--ps-canvas-deep</code> band. Capture → Understand → Remember, each with a real screen crop. Numerals carry the teal glow. Stacks to one column at ≤820px with 64px between steps.</p>
+</body>
+</html>

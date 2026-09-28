@@ -1,0 +1,44 @@
+<!-- @dsCard group="Components" name="FAQ accordion" subtitle="Native <details>, no JS, open + closed" width="960" height="620" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — FAQ accordion</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/components.css">
+<link rel="stylesheet" href="../styles/preview.css">
+</head>
+<body>
+<div class="pv">
+
+  <div class="faq" style="margin-top:0">
+    <details open>
+      <summary>What does PurrSafe actually do?</summary>
+      <p>It gives your cat a single private log — meals, weights, health notes, behaviour, vet visits — and lets you ask questions against it later instead of scrolling.</p>
+    </details>
+    <details>
+      <summary>Is it available yet?</summary>
+      <p>PurrSafe is in private beta. Join the waitlist and we’ll send your invite; when the store listing is live this page links straight to it.</p>
+    </details>
+    <details>
+      <summary>Who can see my cat’s memories?</summary>
+      <p>You. Entries are tied to your account and are not published or shared with other users.</p>
+    </details>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Spec</span>
+    <p class="pv__note">
+      Native <code>&lt;details&gt;/&lt;summary&gt;</code>. <b>No JavaScript</b> — keyboard operation, screen-reader expanded state and
+      find-in-page all come free, and none of them survive a hand-rolled div accordion.
+      Summary is 48px min-height, teal 700/17px, with the default marker removed and a <code>+</code> that rotates 45° when open.
+      The open state adds a 1px <code>--ps-border</code> rule under the summary and squares its bottom corners so the panel reads as one surface.
+      The rotation is a transition, so <code>prefers-reduced-motion</code> collapses it to an instant swap.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

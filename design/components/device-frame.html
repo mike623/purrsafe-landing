@@ -1,0 +1,76 @@
+<!-- @dsCard group="Components" name="Device frame & screenshot crops" subtitle="Real app captures — provenance and crop rules" width="1100" height="860" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — Device frame</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/components.css">
+<link rel="stylesheet" href="../styles/preview.css">
+<style>
+  .row2 { display: flex; gap: var(--ps-8); align-items: flex-start; flex-wrap: wrap; }
+  .cap { font: var(--ps-small); color: var(--ps-ink-muted); max-width: 260px; margin-top: var(--ps-3); }
+  .cap b { color: var(--ps-ink); }
+</style>
+</head>
+<body>
+<div class="pv">
+
+  <div class="pv__group">
+    <span class="pv__label">Full frame — hero and product proof</span>
+    <div class="row2">
+      <div>
+        <div class="device" style="--dev-w:260px">
+          <img src="../assets/app-memory-feed@2x.png" width="880" height="1912"
+               alt="PurrSafe memory feed on iPhone, showing four dated entries for the cat Mochi: a play note, a sneezing note being monitored, a 4.2 kg weight check, and a tuna pâté breakfast.">
+        </div>
+        <p class="cap"><b>Uncropped.</b> 10px bezel padding, 46px outer radius, 36px inner. The iOS status bar stays visible — it reads as authentic rather than as chrome we tried to hide.</p>
+      </div>
+      <div>
+        <div class="device" style="--dev-w:260px">
+          <img src="../assets/app-ask-ai@2x.png" width="880" height="1912"
+               alt="PurrSafe Ask AI screen showing a resumable session for Mochi, a British Shorthair, with the last question “What did Mochi eat recently?” from 28 minutes ago.">
+        </div>
+        <p class="cap"><b>Source:</b> <code>designs/project/uploads/03_ask_ai.png</code>, 1320×2868 (6.7″ @3x), downscaled to 880×1912. No retouching.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Thumbnail crop — how-it-works steps</span>
+    <div class="row2">
+      <div>
+        <div class="step__shot">
+          <img src="../assets/app-add-event@2x.png" width="880" height="1912"
+               alt="The PurrSafe add-memory sheet: a pet selector with Mochi chosen, memory type chips for Food, Health, Weight, Play and Note with Weight selected, a title field, and a body-weight input in kilograms.">
+        </div>
+        <p class="cap">Fixed 232px box at <code>aspect-ratio: 232/300</code>, <code>object-fit: cover</code>, <code>object-position: top center</code>.</p>
+      </div>
+      <div>
+        <div class="step__shot">
+          <img src="../assets/app-profiles@2x.png" width="880" height="1912"
+               alt="The PurrSafe profile gallery showing cards for Mochi, a British Shorthair, and LUNU, with health status chips and links into each archive.">
+        </div>
+        <p class="cap"><b>Crops from the bottom only</b>, so every screen's header and first rows survive. Never crop from the top.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Provenance rules</span>
+    <p class="pv__note">
+      Every screenshot is an unmodified capture from the PurrSafe iOS build in the Application project.
+      Do not recolour, redraw, or composite fabricated UI into them. Do not add testimonials, star ratings, or
+      download counts we cannot evidence. When the app UI changes, <b>re-capture</b> rather than edit.
+      Meaningful <code>alt</code> on every product screenshot; <code>alt=""</code> + <code>aria-hidden</code> on the decorative
+      rear hero device, because the front device already carries the meaning.
+      Ship webp with png fallback, <code>loading="lazy"</code> below the hero, and always set <code>width</code>/<code>height</code>.
+    </p>
+    <p class="pv__note"><b>Open:</b> these captures contain a dog (LUNU, a beagle) while all copy says <em>cat</em>. Positioning call tracked in PUR-75.</p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -9,7 +9,8 @@
   --ps-teal: #006D77;          /* primary: CTA fill, links, headings        */
   --ps-teal-deep: #00575F;     /* hover/active fill                          */
   --ps-seafoam: #83C5BE;       /* light accent, illustrative fills           */
-  --ps-coral: #E29578;         /* accent SURFACES only — never text on white */
+  --ps-coral: #E29578;         /* accent SURFACES only — never text, any background */
+  --ps-coral-tint: #FFD9C4;    /* the ONLY coral that carries text: eyebrow on the teal band, 4.6:1 */
   --ps-coral-light: rgba(226, 149, 120, 0.22);
   --ps-coral-dim: rgba(226, 149, 120, 0.10);
   --ps-teal-dim: rgba(0, 109, 119, 0.12);
@@ -22,15 +23,20 @@
   --ps-border-cool: #C8E0E8;   /* dividers on canvas                         */
 
   /* ---- Text ----------------------------------------------------------- */
-  --ps-ink: #2D2D2D;           /* body + headings          16.1:1 on white   */
-  --ps-ink-muted: #6B6B6B;     /* secondary text            5.3:1 on white   */
+  --ps-ink: #2D2D2D;           /* body + headings          13.8:1 on white   */
+  --ps-ink-muted: #636363;     /* secondary text  6.0 white / 5.5 canvas /
+                                  5.0 on canvas-deep — clears AA on ALL
+                                  three page backgrounds. #6B6B6B was only
+                                  4.4:1 on --ps-canvas-deep and failed in
+                                  the how-it-works band and the footer.     */
   /* #9B9490 (app "Muted Stone") is 2.99:1 on white — DO NOT use for text
      on the landing page. Use --ps-ink-muted instead. */
 
   /* ---- Status --------------------------------------------------------- */
   --ps-safe: #2ECC71;
   --ps-caution: #F39C12;
-  --ps-unsafe: #E74C3C;
+  --ps-unsafe: #E74C3C;      /* fills and icons only — 3.8:1 on white */
+  --ps-unsafe-ink: #C9372A;  /* error TEXT — 5.2:1 on white */
 
   /* ---- Type ----------------------------------------------------------- */
   --ps-font: "Nunito Sans", ui-rounded, "SF Pro Rounded", system-ui,

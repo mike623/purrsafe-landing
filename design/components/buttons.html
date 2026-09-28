@@ -1,0 +1,76 @@
+<!-- @dsCard group="Components" name="Buttons" subtitle="Primary / ghost / small, all five states" width="1200" height="720" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — Buttons</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/components.css">
+<link rel="stylesheet" href="../styles/preview.css">
+<style>
+  /* Pinned states so the card shows what hover/active/focus look like without a pointer. */
+  .is-hover.btn--primary  { background: var(--ps-teal-deep); box-shadow: var(--ps-glow-teal-strong), inset 0 0 0 3px rgba(255,255,255,0.30); transform: translateY(-1px); }
+  .is-active.btn--primary { transform: translateY(1px); box-shadow: 0 2px 6px rgba(0,109,119,0.35), inset 0 0 0 3px rgba(255,255,255,0.30); }
+  .is-hover.btn--ghost    { box-shadow: inset 0 0 0 2px var(--ps-teal), var(--ps-shadow-sm); }
+  .is-focus { outline: var(--ps-focus); outline-offset: var(--ps-focus-offset); }
+  .cell { display: grid; gap: var(--ps-2); justify-items: start; }
+  .cell span { font: var(--ps-small); color: var(--ps-ink-muted); }
+</style>
+</head>
+<body>
+<div class="pv">
+
+  <div class="pv__group">
+    <span class="pv__label">Primary — <code>.btn.btn--primary</code></span>
+    <div class="pv__row">
+      <div class="cell"><button class="btn btn--primary">Get the app</button><span>rest</span></div>
+      <div class="cell"><button class="btn btn--primary is-hover">Get the app</button><span>hover</span></div>
+      <div class="cell"><button class="btn btn--primary is-active">Get the app</button><span>active</span></div>
+      <div class="cell"><button class="btn btn--primary is-focus">Get the app</button><span>focus-visible</span></div>
+      <div class="cell"><button class="btn btn--primary" disabled>Get the app</button><span>disabled</span></div>
+    </div>
+    <p class="pv__note">
+      Teal fill, white 700/17px, 0.3px tracking, 20px radius. Two shadows, both required: the teal glow <em>and</em>
+      <code>inset 0 0 0 3px rgba(255,255,255,.30)</code> — that inset is the clay highlight. Disabled collapses to
+      <code>--ps-border-cool</code> with a <code>#4A4A4A</code> label and no glow.
+    </p>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Secondary — <code>.btn.btn--ghost</code></span>
+    <div class="pv__row">
+      <div class="cell"><a class="btn btn--ghost" href="#">See how it works</a><span>rest</span></div>
+      <div class="cell"><a class="btn btn--ghost is-hover" href="#">See how it works</a><span>hover</span></div>
+      <div class="cell"><a class="btn btn--ghost is-focus" href="#">See how it works</a><span>focus-visible</span></div>
+    </div>
+    <p class="pv__note">White fill, teal label, 2px inset border. Hover swaps the inset border to teal and changes nothing else, so it never competes with the primary for attention.</p>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Small — <code>.btn--sm</code> (header CTA)</span>
+    <div class="pv__row">
+      <div class="cell"><a class="btn btn--primary btn--sm" href="#">Get the app</a><span>rest</span></div>
+      <div class="cell"><a class="btn btn--primary btn--sm is-hover" href="#">Get the app</a><span>hover</span></div>
+      <div class="cell"><a class="btn btn--ghost btn--sm" href="#">Sign in</a><span>ghost, small</span></div>
+    </div>
+    <p class="pv__note">
+      44px min-height, 12px radius, and the clay inset drops to 2px — at 15px the 3px inset visually eats the label.
+      <b>Specificity trap:</b> <code>.nav a { color }</code> silently repainted this label grey (1.1:1) until it was guarded with
+      <code>.nav a.btn--primary { color: #fff }</code>. Re-check it if you restructure the nav.
+    </p>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Rules</span>
+    <p class="pv__note">
+      Minimum interactive box is <code>--ps-tap-min: 48px</code> (44px for nav and footer links). Focus is one global rule —
+      <code>:focus-visible { outline: 3px solid #006D77; outline-offset: 3px }</code> — never removed, never downgraded to a shadow.
+      Under <code>prefers-reduced-motion: reduce</code> the translate on hover and active is dropped.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>
