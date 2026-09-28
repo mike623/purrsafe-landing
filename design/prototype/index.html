@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — Know what is safe. Remember what matters.</title>
+<meta name="description" content="PurrSafe is a private memory and care log for your cat. Capture what happens, understand what it means, and find it again when it matters.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+/* =====================================================================
+   PurrSafe landing prototype — PUR-71
+   Visual spec only. SWE re-implements in Astro; tokens.css is shared.
+   ===================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--ps-canvas);
+  color: var(--ps-ink);
+  font: var(--ps-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img { max-width: 100%; display: block; }
+
+h1, h2, h3 { margin: 0; color: var(--ps-teal); }
+h1 { font: var(--ps-display); letter-spacing: var(--ps-track-display); }
+h2 { font: var(--ps-h2); letter-spacing: var(--ps-track-h2); }
+h3 { font: var(--ps-h3); }
+p  { margin: 0; }
+
+a { color: var(--ps-teal); text-underline-offset: 3px; }
+
+:focus-visible {
+  outline: var(--ps-focus);
+  outline-offset: var(--ps-focus-offset);
+  border-radius: var(--ps-r-sm);
+}
+
+.skip {
+  position: absolute; left: var(--ps-gutter); top: -100px; z-index: 100;
+  background: var(--ps-teal); color: #fff; font-weight: 700;
+  padding: var(--ps-3) var(--ps-5); border-radius: var(--ps-r-sm);
+  transition: top var(--ps-dur) var(--ps-ease);
+}
+.skip:focus { top: var(--ps-3); }
+
+.wrap {
+  width: 100%; max-width: var(--ps-container);
+  margin-inline: auto; padding-inline: var(--ps-gutter);
+}
+section { padding-block: var(--ps-section-y); }
+
+.eyebrow {
+  font: var(--ps-eyebrow); letter-spacing: var(--ps-track-eyebrow);
+  text-transform: uppercase; color: var(--ps-teal);
+  display: inline-flex; align-items: center; gap: var(--ps-2);
+}
+.lead { font: var(--ps-lead); color: var(--ps-ink-muted); max-width: 58ch; }
+.meta { font: var(--ps-small); color: var(--ps-ink-muted); }
+
+/* ---- Buttons --------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--ps-2);
+  min-height: var(--ps-tap-min); padding: 0 var(--ps-6);
+  font: 700 1.0625rem/1 var(--ps-font); letter-spacing: 0.3px;
+  border-radius: var(--ps-r-card); border: 0; cursor: pointer;
+  text-decoration: none; white-space: nowrap;
+  transition: transform var(--ps-dur) var(--ps-ease),
+              box-shadow var(--ps-dur) var(--ps-ease),
+              background-color var(--ps-dur) var(--ps-ease);
+}
+.btn--primary {
+  background: var(--ps-teal); color: #fff;
+  box-shadow: var(--ps-glow-teal), inset 0 0 0 3px rgba(255,255,255,0.30);
+}
+.btn--primary:hover  { background: var(--ps-teal-deep); box-shadow: var(--ps-glow-teal-strong), inset 0 0 0 3px rgba(255,255,255,0.30); transform: translateY(-1px); }
+.btn--primary:active { transform: translateY(1px); box-shadow: 0 2px 6px rgba(0,109,119,0.35), inset 0 0 0 3px rgba(255,255,255,0.30); }
+.btn--primary[aria-disabled="true"],
+.btn--primary:disabled { background: var(--ps-border-cool); color: #4A4A4A; box-shadow: none; cursor: not-allowed; transform: none; }
+
+.btn--ghost {
+  background: var(--ps-surface); color: var(--ps-teal);
+  box-shadow: inset 0 0 0 2px var(--ps-border), var(--ps-shadow-sm);
+}
+.btn--ghost:hover  { box-shadow: inset 0 0 0 2px var(--ps-teal), var(--ps-shadow-sm); }
+.btn--ghost:active { transform: translateY(1px); }
+
+.btn--sm { min-height: 44px; padding: 0 var(--ps-5); font-size: 0.9375rem; border-radius: var(--ps-r-sm); }
+.btn--primary.btn--sm { box-shadow: var(--ps-glow-teal), inset 0 0 0 2px rgba(255,255,255,0.28); }
+
+/* ---- Clay card ------------------------------------------------------- */
+.clay {
+  background: var(--ps-surface);
+  border: 2px solid var(--ps-border);
+  border-radius: var(--ps-r-card);
+  box-shadow: var(--ps-shadow-md);
+  padding: var(--ps-6);
+}
+
+/* ---- Header ---------------------------------------------------------- */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(237, 246, 249, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--ps-border-cool);
+}
+.site-header .wrap {
+  display: flex; align-items: center; gap: var(--ps-5);
+  min-height: 72px;
+}
+.brand {
+  display: inline-flex; align-items: center; gap: var(--ps-3);
+  font: 800 1.25rem/1 var(--ps-font); letter-spacing: -0.4px;
+  color: var(--ps-teal); text-decoration: none;
+}
+.brand__mark {
+  width: 40px; height: 40px; border-radius: 12px; flex: none;
+  border: 2px solid var(--ps-border);
+  box-shadow: var(--ps-shadow-sm);
+}
+.nav { margin-left: auto; display: flex; align-items: center; gap: var(--ps-2); }
+.nav a {
+  display: inline-flex; align-items: center; min-height: 44px;
+  padding-inline: var(--ps-3);
+  font: 600 0.9375rem/1 var(--ps-font); color: var(--ps-ink-muted);
+  text-decoration: none; border-radius: var(--ps-r-sm);
+}
+.nav a:hover { color: var(--ps-teal); background: var(--ps-teal-dim); }
+/* specificity guard: .nav a must not repaint the CTA label */
+.nav a.btn--primary, .nav a.btn--primary:hover { color: #fff; background: var(--ps-teal); }
+.nav a.btn--primary:hover { background: var(--ps-teal-deep); }
+
+/* ---- Hero ------------------------------------------------------------ */
+.hero { padding-top: var(--ps-8); overflow: hidden; }
+.hero__grid {
+  display: grid; gap: var(--ps-8);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  align-items: center;
+}
+.hero__copy > * + * { margin-top: var(--ps-5); }
+.hero h1 { max-width: 14ch; }
+.hero__actions { display: flex; flex-wrap: wrap; gap: var(--ps-3); }
+.badge {
+  display: inline-flex; align-items: center; gap: var(--ps-2);
+  padding: var(--ps-2) var(--ps-4);
+  background: var(--ps-teal-dim); color: var(--ps-teal);
+  border-radius: var(--ps-r-pill);
+  font: var(--ps-eyebrow); letter-spacing: var(--ps-track-eyebrow);
+  text-transform: uppercase;
+}
+.hero__note {
+  display: flex; gap: var(--ps-3); align-items: flex-start;
+  max-width: 46ch;
+}
+.hero__note-bar { width: 4px; border-radius: 2px; background: var(--ps-coral); align-self: stretch; flex: none; }
+
+/* ---- Device frame (real screenshots) --------------------------------- */
+.device {
+  --dev-w: 300px;
+  width: var(--dev-w); flex: none;
+  padding: 10px;
+  background: linear-gradient(160deg, #3A3A3A, #151515);
+  border-radius: 46px;
+  box-shadow: var(--ps-shadow-xl), inset 0 0 0 2px rgba(255,255,255,0.10);
+}
+.device img { border-radius: 36px; width: 100%; height: auto; }
+
+.hero__stage, .proof__stage { position: relative; display: flex; justify-content: center; }
+.hero__stage::before, .proof__stage::before {
+  content: ""; position: absolute; inset: -6% -10% 6% -10%;
+  background:
+    radial-gradient(60% 55% at 70% 25%, var(--ps-coral-light), transparent 70%),
+    radial-gradient(55% 50% at 25% 70%, rgba(131,197,190,0.38), transparent 70%);
+  filter: blur(6px); z-index: 0;
+}
+/* proof stage has no clipping ancestor — keep its glow inside the column */
+.proof__stage::before { inset: -4% 0 4% 0; }
+.hero__stage > *, .proof__stage > * { position: relative; z-index: 1; }
+.hero__stage .device--front { --dev-w: 318px; z-index: 2; }
+.hero__stage .device--back  {
+  --dev-w: 250px; position: absolute; right: -2%; bottom: 14%; z-index: 1;
+  transform: rotate(7deg);
+}
+
+/* ---- Bands ----------------------------------------------------------- */
+.band--surface { background: var(--ps-surface); }
+.band--deep    { background: var(--ps-canvas-deep); }
+.band--teal    { background: var(--ps-teal); color: #fff; }
+.band--teal h2, .band--teal h3 { color: #fff; }
+.band--teal .lead, .band--teal .meta { color: rgba(255,255,255,0.86); }
+.band--teal .eyebrow { color: var(--ps-coral); }
+
+.section-head { max-width: 62ch; }
+.section-head > * + * { margin-top: var(--ps-4); }
+.section-head--center { margin-inline: auto; text-align: center; }
+.section-head--center .lead { margin-inline: auto; }
+
+/* ---- Problem --------------------------------------------------------- */
+.problem__grid { display: grid; gap: var(--ps-5); grid-template-columns: repeat(3, 1fr); margin-top: var(--ps-7); }
+.problem__item { padding: var(--ps-5); border-left: 4px solid var(--ps-coral); background: var(--ps-coral-dim); border-radius: 0 var(--ps-r-sm) var(--ps-r-sm) 0; }
+.problem__item p { color: var(--ps-ink); }
+
+/* ---- Benefits -------------------------------------------------------- */
+.cards { display: grid; gap: var(--ps-5); margin-top: var(--ps-7); }
+.cards--4 { grid-template-columns: repeat(4, 1fr); }
+.cards--3 { grid-template-columns: repeat(3, 1fr); }
+.card__icon {
+  width: 56px; height: 56px; border-radius: var(--ps-r-sm);
+  background: var(--ps-teal-dim); display: grid; place-items: center;
+  font-size: 26px; margin-bottom: var(--ps-4);
+}
+.card h3 { margin-bottom: var(--ps-2); }
+.card p { color: var(--ps-ink-muted); font: var(--ps-small); }
+
+/* ---- How it works ---------------------------------------------------- */
+.steps { display: grid; gap: var(--ps-7); grid-template-columns: repeat(3, 1fr); margin-top: var(--ps-8); }
+.step { text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--ps-4); }
+.step__num {
+  width: 40px; height: 40px; border-radius: var(--ps-r-pill);
+  background: var(--ps-teal); color: #fff; display: grid; place-items: center;
+  font: 800 1rem/1 var(--ps-font); box-shadow: var(--ps-glow-teal);
+}
+.step .device { --dev-w: 232px; }
+.step__shot {
+  width: 232px; border-radius: var(--ps-r-lg); overflow: hidden;
+  border: 2px solid var(--ps-border); background: var(--ps-surface);
+  box-shadow: var(--ps-shadow-lg);
+  aspect-ratio: 232 / 300;
+}
+.step__shot img { height: 100%; object-fit: cover; object-position: top center; }
+.step p { color: var(--ps-ink-muted); max-width: 32ch; }
+
+/* ---- Product proof --------------------------------------------------- */
+.proof__grid {
+  display: grid; gap: var(--ps-8);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center; margin-top: var(--ps-7);
+}
+.callouts { display: grid; gap: var(--ps-4); }
+.callout {
+  display: grid; grid-template-columns: auto 1fr; gap: var(--ps-4);
+  align-items: start; padding: var(--ps-4) var(--ps-5);
+  background: var(--ps-surface); border: 2px solid var(--ps-border);
+  border-radius: var(--ps-r-card); box-shadow: var(--ps-shadow-sm);
+}
+.callout__dot {
+  width: 28px; height: 28px; border-radius: var(--ps-r-pill); flex: none;
+  background: var(--ps-coral); color: var(--ps-ink);
+  display: grid; place-items: center; font: 800 0.8125rem/1 var(--ps-font);
+}
+.callout h3 { font: 700 1.0625rem/1.3 var(--ps-font); margin-bottom: 2px; }
+.callout p { font: var(--ps-small); color: var(--ps-ink-muted); }
+.provenance {
+  margin-top: var(--ps-5); font: var(--ps-small); color: var(--ps-ink-muted);
+}
+.provenance code { overflow-wrap: anywhere; }
+
+/* ---- Trust ----------------------------------------------------------- */
+.trust__grid { display: grid; gap: var(--ps-5); grid-template-columns: repeat(3, 1fr); margin-top: var(--ps-7); }
+.trust__item {
+  background: rgba(255,255,255,0.10); border: 2px solid rgba(255,255,255,0.22);
+  border-radius: var(--ps-r-card); padding: var(--ps-6);
+}
+.trust__item h3 { font: 700 1.125rem/1.3 var(--ps-font); margin-bottom: var(--ps-2); }
+.trust__item p { color: rgba(255,255,255,0.86); font: var(--ps-small); }
+.disclaimer {
+  margin-top: var(--ps-6); padding: var(--ps-5);
+  border-radius: var(--ps-r-sm); border: 2px solid rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.08); font: var(--ps-small); color: #fff;
+}
+
+/* ---- FAQ ------------------------------------------------------------- */
+.faq { max-width: 820px; margin-inline: auto; margin-top: var(--ps-7); display: grid; gap: var(--ps-3); }
+.faq details {
+  background: var(--ps-surface); border: 2px solid var(--ps-border);
+  border-radius: var(--ps-r-card); box-shadow: var(--ps-shadow-sm);
+}
+.faq summary {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--ps-4);
+  min-height: var(--ps-tap-min); padding: var(--ps-4) var(--ps-5);
+  font: 700 1.0625rem/1.4 var(--ps-font); color: var(--ps-teal);
+  border-radius: var(--ps-r-card);
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+"; font: 800 1.5rem/1 var(--ps-font); color: var(--ps-teal); flex: none;
+  transition: transform var(--ps-dur) var(--ps-ease);
+}
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details[open] summary { border-bottom: 1px solid var(--ps-border); border-radius: var(--ps-r-card) var(--ps-r-card) 0 0; }
+.faq p { padding: var(--ps-4) var(--ps-5) var(--ps-5); color: var(--ps-ink-muted); }
+
+/* ---- Final CTA ------------------------------------------------------- */
+.cta-panel {
+  border-radius: var(--ps-r-lg); padding: clamp(32px, 5vw, 64px);
+  background: var(--ps-surface); border: 2px solid var(--ps-border);
+  box-shadow: var(--ps-shadow-lg); text-align: center;
+}
+.cta-panel > * + * { margin-top: var(--ps-5); }
+.waitlist {
+  display: flex; gap: var(--ps-3); flex-wrap: wrap;
+  justify-content: center; margin-inline: auto; max-width: 520px;
+}
+.waitlist label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.waitlist input {
+  flex: 1 1 260px; min-height: var(--ps-tap-min);
+  padding: 0 var(--ps-4); font: var(--ps-body); color: var(--ps-ink);
+  background: var(--ps-canvas); border: 2px solid var(--ps-border-cool);
+  border-radius: var(--ps-r-card);
+}
+.waitlist input::placeholder { color: var(--ps-ink-muted); }
+.waitlist input:focus-visible { outline: var(--ps-focus); outline-offset: 2px; border-color: var(--ps-teal); }
+
+/* ---- Footer ---------------------------------------------------------- */
+.site-footer { background: var(--ps-canvas-deep); padding-block: var(--ps-8) var(--ps-6); }
+.footer__grid { display: flex; flex-wrap: wrap; gap: var(--ps-5); align-items: center; }
+.footer__links { margin-left: auto; display: flex; flex-wrap: wrap; gap: var(--ps-2); }
+.footer__links a {
+  display: inline-flex; align-items: center; min-height: 44px;
+  padding-inline: var(--ps-3); font: var(--ps-small); font-weight: 600;
+  color: var(--ps-teal); text-decoration: none; border-radius: var(--ps-r-sm);
+}
+.footer__links a:hover { text-decoration: underline; }
+.footer__legal { margin-top: var(--ps-5); font: var(--ps-small); color: var(--ps-ink-muted); max-width: 70ch; }
+
+/* ---- Responsive ------------------------------------------------------ */
+@media (max-width: 1024px) {
+  .cards--4 { grid-template-columns: repeat(2, 1fr); }
+  .hero__grid { grid-template-columns: 1fr; gap: var(--ps-7); }
+  .hero__stage { order: 2; }
+  .hero h1 { max-width: 18ch; }
+  .proof__grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 820px) {
+  .nav a:not(.btn) { display: none; }         /* ship as a disclosure menu */
+  .problem__grid, .trust__grid { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; gap: var(--ps-8); }
+}
+@media (max-width: 560px) {
+  .cards--4, .cards--3 { grid-template-columns: 1fr; }
+  .hero__stage .device--back { display: none; }
+  .hero__stage .device--front { --dev-w: min(280px, 72vw); }
+  .hero__actions .btn { width: 100%; }
+  .clay { padding: var(--ps-5); }
+}
+
+/* ---- Reduced motion --------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .btn:hover, .btn:active { transform: none; }
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <img class="brand__mark" src="../assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
+      PurrSafe
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="#how">How it works</a>
+      <a href="#proof">In the app</a>
+      <a href="#trust">Safety</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn btn--primary btn--sm" href="#get">Get the app</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero" id="top">
+    <div class="wrap hero__grid">
+      <div class="hero__copy">
+        <span class="badge">Private beta</span>
+        <h1>Know what is safe. Remember what matters.</h1>
+        <p class="lead">
+          PurrSafe is a private memory and care log for your cat. Note what happened,
+          let it be organised for you, and find the answer again the moment you need it —
+          at the vet, at dinner time, or when someone else is feeding her.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="#get">Get the app</a>
+          <a class="btn btn--ghost" href="#how">See how it works</a>
+        </div>
+        <div class="hero__note">
+          <span class="hero__note-bar" aria-hidden="true"></span>
+          <p class="meta">
+            PurrSafe is in private beta. <strong>Get the app</strong> joins the waitlist
+            today and becomes a direct App&nbsp;Store link at launch.
+          </p>
+        </div>
+      </div>
+
+      <div class="hero__stage">
+        <div class="device device--front">
+          <img src="../assets/app-memory-feed@2x.png" width="880" height="1912"
+               alt="PurrSafe memory feed on iPhone, showing four dated entries for the cat Mochi: a play note, a sneezing note being monitored, a 4.2 kg weight check, and a tuna pâté breakfast.">
+        </div>
+        <div class="device device--back" aria-hidden="true">
+          <img src="../assets/app-ask-ai@2x.png" width="880" height="1912" alt="">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PROBLEM ================= -->
+  <section class="band--surface">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">The problem</span>
+        <h2>Your cat&rsquo;s history lives in six different places</h2>
+        <p class="lead">
+          Photos in the camera roll, weights in a notes app, the vet&rsquo;s advice in a
+          half-remembered conversation. When it matters, none of it is where you look.
+        </p>
+      </div>
+      <div class="problem__grid">
+        <div class="problem__item"><p>&ldquo;When did she last lose weight?&rdquo;</p></div>
+        <div class="problem__item"><p>&ldquo;Can she actually eat this?&rdquo;</p></div>
+        <div class="problem__item"><p>&ldquo;What do I tell the cat sitter?&rdquo;</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BENEFITS ================= -->
+  <section>
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">What you get</span>
+        <h2>One calm place for everything about her</h2>
+      </div>
+      <div class="cards cards--4">
+        <article class="clay card">
+          <div class="card__icon" aria-hidden="true">🍽️</div>
+          <h3>Food you can check</h3>
+          <p>Log meals and check what she is eating before it becomes a worry.</p>
+        </article>
+        <article class="clay card">
+          <div class="card__icon" aria-hidden="true">✨</div>
+          <h3>Memories that log themselves</h3>
+          <p>Write it the way you&rsquo;d say it. PurrSafe tags and files it by type and date.</p>
+        </article>
+        <article class="clay card">
+          <div class="card__icon" aria-hidden="true">🔍</div>
+          <h3>Ask, don&rsquo;t scroll</h3>
+          <p>Ask a question about your cat and get an answer drawn only from her own log.</p>
+        </article>
+        <article class="clay card">
+          <div class="card__icon" aria-hidden="true">🐈</div>
+          <h3>A profile per pet</h3>
+          <p>Every pet in the household keeps a separate archive, so nothing gets mixed up.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section id="how" class="band--deep">
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">How it works</span>
+        <h2>Capture &rarr; Understand &rarr; Remember</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="step__num" aria-hidden="true">1</span>
+          <h3>Capture</h3>
+          <p>Pick the pet, pick the type, add a line or a photo. It takes seconds.</p>
+          <div class="step__shot">
+            <img src="../assets/app-add-event@2x.png" width="880" height="1912"
+                 alt="The PurrSafe add-memory sheet: a pet selector with Mochi chosen, memory type chips for Food, Health, Weight, Play and Note with Weight selected, a title field, and a body-weight input in kilograms.">
+          </div>
+        </div>
+        <div class="step">
+          <span class="step__num" aria-hidden="true">2</span>
+          <h3>Understand</h3>
+          <p>Each entry is typed and tagged, so the log stays structured without extra work.</p>
+          <div class="step__shot">
+            <img src="../assets/app-memory-feed@2x.png" width="880" height="1912"
+                 alt="The PurrSafe memory feed filtered by pet and by category chips for Food, Health, Vet and Behavior.">
+          </div>
+        </div>
+        <div class="step">
+          <span class="step__num" aria-hidden="true">3</span>
+          <h3>Remember</h3>
+          <p>Ask a question later. The assistant answers from that cat&rsquo;s memories only.</p>
+          <div class="step__shot">
+            <img src="../assets/app-ask-ai@2x.png" width="880" height="1912"
+                 alt="The PurrSafe Ask AI screen, headed “Whose story today?”, listing Mochi with a resumable session and LUNU with a start button.">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PRODUCT PROOF ================= -->
+  <section id="proof" class="band--surface">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">In the app</span>
+        <h2>This is the real thing</h2>
+        <p class="lead">
+          Every screen on this page is an unretouched capture from the PurrSafe build —
+          no mockups, no invented reviews.
+        </p>
+      </div>
+
+      <div class="proof__grid">
+        <div class="proof__stage">
+          <div class="device">
+            <img src="../assets/app-ask-ai@2x.png" width="880" height="1912"
+                 alt="PurrSafe Ask AI screen showing a resumable session for Mochi, a British Shorthair, with the last question “What did Mochi eat recently?” from 28 minutes ago.">
+          </div>
+        </div>
+
+        <div>
+          <div class="callouts">
+            <div class="callout">
+              <span class="callout__dot" aria-hidden="true">1</span>
+              <div>
+                <h3>One cat at a time</h3>
+                <p>The assistant is scoped to a single pet&rsquo;s memories, so answers never bleed across profiles.</p>
+              </div>
+            </div>
+            <div class="callout">
+              <span class="callout__dot" aria-hidden="true">2</span>
+              <div>
+                <h3>Sessions pick up where you left off</h3>
+                <p>Your last question stays visible and resumable instead of disappearing into a chat history.</p>
+              </div>
+            </div>
+            <div class="callout">
+              <span class="callout__dot" aria-hidden="true">3</span>
+              <div>
+                <h3>Grounded in your own log</h3>
+                <p>Answers cite the memories you recorded &mdash; not generic advice from the internet.</p>
+              </div>
+            </div>
+          </div>
+          <p class="provenance">
+            Source: PurrSafe iOS build, captured at 1320&times;2868 (6.7&Prime; @3x).
+            Asset <code>designs/project/uploads/03_ask_ai.png</code>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TRUST & SAFETY ================= -->
+  <section id="trust" class="band--teal">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Trust &amp; safety</span>
+        <h2>Her life, not our dataset</h2>
+      </div>
+      <div class="trust__grid">
+        <article class="trust__item">
+          <h3>Private by default</h3>
+          <p>Your log belongs to your account. It is not public, not shared, and not sold.</p>
+        </article>
+        <article class="trust__item">
+          <h3>Honest about the AI</h3>
+          <p>The assistant reads what you wrote. It can still be wrong, and it tells you what it used.</p>
+        </article>
+        <article class="trust__item">
+          <h3>You can leave</h3>
+          <p>Export or delete your pet&rsquo;s archive whenever you want.</p>
+        </article>
+      </div>
+      <p class="disclaimer">
+        <strong>Not veterinary advice.</strong> PurrSafe helps you record and recall what you
+        have observed. It does not diagnose, treat, or replace a veterinarian. If you are
+        worried about your cat, contact your vet.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section id="faq">
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">FAQ</span>
+        <h2>Questions people actually ask</h2>
+      </div>
+      <div class="faq">
+        <details open>
+          <summary>What does PurrSafe actually do?</summary>
+          <p>It gives your cat a single private log — meals, weights, health notes, behaviour, vet visits — and lets you ask questions against it later instead of scrolling.</p>
+        </details>
+        <details>
+          <summary>Is it available yet?</summary>
+          <p>PurrSafe is in private beta. Join the waitlist and we&rsquo;ll send your invite; when the store listing is live this page links straight to it.</p>
+        </details>
+        <details>
+          <summary>Who can see my cat&rsquo;s memories?</summary>
+          <p>You. Entries are tied to your account and are not published or shared with other users.</p>
+        </details>
+        <details>
+          <summary>Can it tell me if a food is dangerous?</summary>
+          <p>It can help you record and look up what your cat ate and flag what you have logged before. It is not a medical authority — anything urgent goes to your vet.</p>
+        </details>
+        <details>
+          <summary>Does it work for more than one pet?</summary>
+          <p>Yes. Each pet gets its own profile and its own archive, and the assistant only reads the one you select.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FINAL CTA ================= -->
+  <section id="get" class="band--surface">
+    <div class="wrap">
+      <div class="cta-panel">
+        <span class="eyebrow">Private beta</span>
+        <h2>Start her archive today</h2>
+        <p class="lead" style="margin-inline:auto">
+          Leave your email and we&rsquo;ll send an invite as soon as a slot opens.
+        </p>
+        <form class="waitlist" action="#" method="post">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" inputmode="email"
+                 autocomplete="email" required placeholder="you@example.com">
+          <button class="btn btn--primary" type="submit">Get the app</button>
+        </form>
+        <p class="meta">No spam. One email when your invite is ready.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <a class="brand" href="#top">
+        <img class="brand__mark" src="../assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
+        PurrSafe
+      </a>
+      <nav class="footer__links" aria-label="Footer">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+    <p class="footer__legal">
+      © 2026 PurrSafe. Private beta. PurrSafe is a record-keeping tool and does not
+      provide veterinary advice. App screenshots are unmodified captures of the current build.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
