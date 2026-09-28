@@ -1,0 +1,48 @@
+<!-- @dsCard group="Sections" name="Trust &amp; safety" subtitle="" width="1440" height="680" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — Trust &amp; safety</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/components.css">
+<style>
+  body { margin:0; background:var(--ps-canvas); color:var(--ps-ink); font:var(--ps-body); -webkit-font-smoothing:antialiased; }
+  .pv-note { padding: var(--ps-5) var(--ps-gutter); font: var(--ps-small); color: var(--ps-ink-muted); border-top: 1px solid var(--ps-border-cool); }
+  .pv-note b { color: var(--ps-ink); }
+  .pv-note code { color: var(--ps-teal); font-weight:700; }
+</style>
+</head>
+<body>
+<section id="trust" class="band--teal">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Trust &amp; safety</span>
+        <h2>Her life, not our dataset</h2>
+      </div>
+      <div class="trust__grid">
+        <article class="trust__item">
+          <h3>Private by default</h3>
+          <p>Your log belongs to your account. It is not public, not shared, and not sold.</p>
+        </article>
+        <article class="trust__item">
+          <h3>Honest about the AI</h3>
+          <p>The assistant reads what you wrote. It can still be wrong, and it tells you what it used.</p>
+        </article>
+        <article class="trust__item">
+          <h3>You can leave</h3>
+          <p>Export or delete your pet&rsquo;s archive whenever you want.</p>
+        </article>
+      </div>
+      <p class="disclaimer">
+        <strong>Not veterinary advice.</strong> PurrSafe helps you record and recall what you
+        have observed. It does not diagnose, treat, or replace a veterinarian. If you are
+        worried about your cat, contact your vet.
+      </p>
+    </div>
+  </section>
+<p class="pv-note">The only inverted band on the page, and deliberately so: it is the pivot between the sell half and the reassure half. Do not add a second one. Eyebrow uses <code>--ps-coral-tint</code>, not coral — coral proper is 2.55:1 on teal and fails. The medical disclaimer is a full-width panel, not a footnote.</p>
+</body>
+</html>

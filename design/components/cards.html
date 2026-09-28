@@ -1,0 +1,97 @@
+<!-- @dsCard group="Components" name="Cards & strips" subtitle="Clay card, callout, problem strip, trust card, badge" width="1200" height="880" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — Cards</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/components.css">
+<link rel="stylesheet" href="../styles/preview.css">
+<style>
+  .on-teal { background: var(--ps-teal); border-radius: var(--ps-r-card); padding: var(--ps-6); }
+  .grid2 { display: grid; gap: var(--ps-5); grid-template-columns: repeat(2, minmax(0,1fr)); }
+</style>
+</head>
+<body>
+<div class="pv">
+
+  <div class="pv__group">
+    <span class="pv__label">Clay card — <code>.clay.card</code></span>
+    <div class="grid2">
+      <article class="clay card">
+        <div class="card__icon" aria-hidden="true">✨</div>
+        <h3>Memories that log themselves</h3>
+        <p>Write it the way you’d say it. PurrSafe tags and files it by type and date.</p>
+      </article>
+      <article class="clay card">
+        <div class="card__icon" aria-hidden="true">🔍</div>
+        <h3>Ask, don’t scroll</h3>
+        <p>Ask a question about your cat and get an answer drawn only from her own log.</p>
+      </article>
+    </div>
+    <p class="pv__note">White fill, 2px <code>--ps-border</code>, 20px radius, <code>--ps-shadow-md</code>, 32px padding (24px ≤560px). Icon tile is 56px on <code>--ps-teal-dim</code> at 12px radius. <b>Static</b> — no hover lift, because nothing here is clickable and a lift would imply it is.</p>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Numbered callout — <code>.callout</code></span>
+    <div class="callouts" style="max-width:640px">
+      <div class="callout">
+        <span class="callout__dot" aria-hidden="true">1</span>
+        <div>
+          <h3>One cat at a time</h3>
+          <p>The assistant is scoped to a single pet’s memories, so answers never bleed across profiles.</p>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="callout__dot" aria-hidden="true">2</span>
+        <div>
+          <h3>Sessions pick up where you left off</h3>
+          <p>Your last question stays visible and resumable instead of disappearing into a chat history.</p>
+        </div>
+      </div>
+    </div>
+    <p class="pv__note">The numeral is <b>charcoal on coral</b>, not white on coral. White on <code>#E29578</code> is 2.39:1; charcoal is 5.8:1. The numerals are decorative ordinals — <code>aria-hidden</code>, with the heading carrying the meaning.</p>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Problem strip — <code>.problem__item</code></span>
+    <div class="problem__grid" style="margin-top:0">
+      <div class="problem__item"><p>“When did she last lose weight?”</p></div>
+      <div class="problem__item"><p>“Can she actually eat this?”</p></div>
+      <div class="problem__item"><p>“What do I tell the cat sitter?”</p></div>
+    </div>
+    <p class="pv__note">4px coral left rule on a <code>--ps-coral-dim</code> wash, squared on the left and 12px-rounded on the right. Coral as fill, never as text.</p>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Trust card on the teal band — <code>.trust__item</code></span>
+    <div class="on-teal">
+      <div class="trust__grid" style="margin-top:0">
+        <article class="trust__item">
+          <h3>Private by default</h3>
+          <p>Your log belongs to your account. It is not public, not shared, and not sold.</p>
+        </article>
+        <article class="trust__item">
+          <h3>Honest about the AI</h3>
+          <p>The assistant reads what you wrote. It can still be wrong, and it tells you what it used.</p>
+        </article>
+      </div>
+    </div>
+    <p class="pv__note">Inverted variant: 10% white fill, 22% white border. Body drops to 86% white for hierarchy without going below AA on teal.</p>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Badge and eyebrow</span>
+    <div class="pv__row">
+      <span class="badge">Private beta</span>
+      <span class="eyebrow">How it works</span>
+      <div class="on-teal" style="padding:var(--ps-4) var(--ps-5)"><span class="eyebrow" style="color:var(--ps-coral)">Trust &amp; safety</span></div>
+    </div>
+    <p class="pv__note">The eyebrow is the one place coral carries text — on the teal band, where it clears AA comfortably.</p>
+  </div>
+
+</div>
+</body>
+</html>

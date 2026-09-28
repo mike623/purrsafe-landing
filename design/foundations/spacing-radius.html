@@ -1,0 +1,70 @@
+<!-- @dsCard group="Foundations" name="Spacing, radius & elevation" subtitle="4pt scale, the 20px clay radius, teal glow" width="1200" height="820" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — Spacing, radius, elevation</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/preview.css">
+<style>
+  .stack { display: grid; gap: var(--ps-3); }
+  .shadow-demo {
+    width: 160px; height: 100px; background: var(--ps-surface);
+    border-radius: var(--ps-r-card); display: grid; place-items: center;
+    font: var(--ps-small); color: var(--ps-ink-muted); text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="pv">
+
+  <div class="pv__group">
+    <span class="pv__label">Spacing — 4pt scale</span>
+    <div class="stack">
+      <div class="ruler"><div class="ruler__bar" style="width:4px"></div><span class="sw__meta"><b>--ps-1</b> 4px</span></div>
+      <div class="ruler"><div class="ruler__bar" style="width:8px"></div><span class="sw__meta"><b>--ps-2</b> 8px</span></div>
+      <div class="ruler"><div class="ruler__bar" style="width:12px"></div><span class="sw__meta"><b>--ps-3</b> 12px — button gap, card grid gutter on mobile</span></div>
+      <div class="ruler"><div class="ruler__bar" style="width:16px"></div><span class="sw__meta"><b>--ps-4</b> 16px</span></div>
+      <div class="ruler"><div class="ruler__bar" style="width:24px"></div><span class="sw__meta"><b>--ps-5</b> 24px — card grid gap, stacked copy rhythm</span></div>
+      <div class="ruler"><div class="ruler__bar" style="width:32px"></div><span class="sw__meta"><b>--ps-6</b> 32px — clay card padding</span></div>
+      <div class="ruler"><div class="ruler__bar" style="width:48px"></div><span class="sw__meta"><b>--ps-7</b> 48px — section head to content</span></div>
+      <div class="ruler"><div class="ruler__bar" style="width:64px"></div><span class="sw__meta"><b>--ps-8</b> 64px — two-column gap</span></div>
+      <div class="ruler"><div class="ruler__bar" style="width:96px"></div><span class="sw__meta"><b>--ps-9</b> 96px</span></div>
+      <div class="ruler"><div class="ruler__bar" style="width:128px"></div><span class="sw__meta"><b>--ps-10</b> 128px</span></div>
+    </div>
+    <p class="pv__note">Section rhythm is <code>--ps-section-y: clamp(72px, 8vw, 128px)</code>. Container 1200px, gutter <code>clamp(20px, 4vw, 32px)</code>.</p>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Radius</span>
+    <div class="pv__row">
+      <div class="radius-demo" style="border-radius:var(--ps-r-sm)">12px<br>small</div>
+      <div class="radius-demo" style="border-radius:var(--ps-r-card)">20px<br><b>clay card</b></div>
+      <div class="radius-demo" style="border-radius:var(--ps-r-lg)">28px<br>large surface</div>
+      <div class="radius-demo" style="border-radius:var(--ps-r-pill)">999px<br>pill</div>
+    </div>
+    <p class="pv__note">The 20px card radius is the strongest carry-over from the mobile app. Generous but not a pill — keep it.</p>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Elevation</span>
+    <div class="pv__row">
+      <div class="shadow-demo" style="box-shadow:var(--ps-shadow-sm)">sm<br>0 2px 8px / 6%</div>
+      <div class="shadow-demo" style="box-shadow:var(--ps-shadow-md)">md<br>0 4px 10px / 12%</div>
+      <div class="shadow-demo" style="box-shadow:var(--ps-shadow-lg)">lg<br>0 8px 16px / 16%</div>
+      <div class="shadow-demo" style="box-shadow:var(--ps-shadow-xl)">xl<br>device frame only</div>
+      <div class="shadow-demo" style="box-shadow:var(--ps-glow-teal);background:var(--ps-teal);color:#fff">teal glow<br>0 4px 10px / 40%</div>
+    </div>
+    <p class="pv__note">The teal glow is the app's signature and is reserved for primary buttons and the step numerals. Spray it around and it stops meaning "this is the action".</p>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Soft clay recipe</span>
+    <p class="pv__note">White fill + <b>2px <code>#E2F0F5</code> border</b> + soft shadow. The warm border is the inner highlight; it is what makes the surface read as clay rather than as a flat rectangle. Never substitute a hard grey outline.</p>
+  </div>
+
+</div>
+</body>
+</html>

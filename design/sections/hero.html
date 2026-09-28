@@ -1,0 +1,55 @@
+<!-- @dsCard group="Sections" name="Hero" subtitle="" width="1440" height="760" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — Hero</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/components.css">
+<style>
+  body { margin:0; background:var(--ps-canvas); color:var(--ps-ink); font:var(--ps-body); -webkit-font-smoothing:antialiased; }
+  .pv-note { padding: var(--ps-5) var(--ps-gutter); font: var(--ps-small); color: var(--ps-ink-muted); border-top: 1px solid var(--ps-border-cool); }
+  .pv-note b { color: var(--ps-ink); }
+  .pv-note code { color: var(--ps-teal); font-weight:700; }
+</style>
+</head>
+<body>
+<section class="hero" id="top">
+    <div class="wrap hero__grid">
+      <div class="hero__copy">
+        <span class="badge">Private beta</span>
+        <h1>Know what is safe. Remember what matters.</h1>
+        <p class="lead">
+          PurrSafe is a private memory and care log for your cat. Note what happened,
+          let it be organised for you, and find the answer again the moment you need it —
+          at the vet, at dinner time, or when someone else is feeding her.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="#get">Get the app</a>
+          <a class="btn btn--ghost" href="#how">See how it works</a>
+        </div>
+        <div class="hero__note">
+          <span class="hero__note-bar" aria-hidden="true"></span>
+          <p class="meta">
+            PurrSafe is in private beta. <strong>Get the app</strong> joins the waitlist
+            today and becomes a direct App&nbsp;Store link at launch.
+          </p>
+        </div>
+      </div>
+
+      <div class="hero__stage">
+        <div class="device device--front">
+          <img src="../assets/app-memory-feed@2x.png" width="880" height="1912"
+               alt="PurrSafe memory feed on iPhone, showing four dated entries for the cat Mochi: a play note, a sneezing note being monitored, a 4.2 kg weight check, and a tuna pâté breakfast.">
+        </div>
+        <div class="device device--back" aria-hidden="true">
+          <img src="../assets/app-ask-ai@2x.png" width="880" height="1912" alt="">
+        </div>
+      </div>
+    </div>
+  </section>
+<p class="pv-note">Two columns <code>minmax(0,1.05fr) / minmax(0,1fr)</code>, copy left, device stage right. At ≤1024px it stacks and the devices move <b>below</b> the copy (<code>order:2</code>); at ≤560px the rear device is hidden, the front drops to <code>min(280px,72vw)</code> and the buttons go full width. <code>h1</code> is capped at 14ch (18ch ≤1024) so the promise always breaks in three lines. The private-beta note under the CTA disappears the day the store link exists.</p>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!-- @dsCard group="Sections" name="Product proof" subtitle="" width="1440" height="860" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — Product proof</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/components.css">
+<style>
+  body { margin:0; background:var(--ps-canvas); color:var(--ps-ink); font:var(--ps-body); -webkit-font-smoothing:antialiased; }
+  .pv-note { padding: var(--ps-5) var(--ps-gutter); font: var(--ps-small); color: var(--ps-ink-muted); border-top: 1px solid var(--ps-border-cool); }
+  .pv-note b { color: var(--ps-ink); }
+  .pv-note code { color: var(--ps-teal); font-weight:700; }
+</style>
+</head>
+<body>
+<section id="proof" class="band--surface">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">In the app</span>
+        <h2>This is the real thing</h2>
+        <p class="lead">
+          Every screen on this page is an unretouched capture from the PurrSafe build —
+          no mockups, no invented reviews.
+        </p>
+      </div>
+
+      <div class="proof__grid">
+        <div class="proof__stage">
+          <div class="device">
+            <img src="../assets/app-ask-ai@2x.png" width="880" height="1912"
+                 alt="PurrSafe Ask AI screen showing a resumable session for Mochi, a British Shorthair, with the last question “What did Mochi eat recently?” from 28 minutes ago.">
+          </div>
+        </div>
+
+        <div>
+          <div class="callouts">
+            <div class="callout">
+              <span class="callout__dot" aria-hidden="true">1</span>
+              <div>
+                <h3>One cat at a time</h3>
+                <p>The assistant is scoped to a single pet&rsquo;s memories, so answers never bleed across profiles.</p>
+              </div>
+            </div>
+            <div class="callout">
+              <span class="callout__dot" aria-hidden="true">2</span>
+              <div>
+                <h3>Sessions pick up where you left off</h3>
+                <p>Your last question stays visible and resumable instead of disappearing into a chat history.</p>
+              </div>
+            </div>
+            <div class="callout">
+              <span class="callout__dot" aria-hidden="true">3</span>
+              <div>
+                <h3>Grounded in your own log</h3>
+                <p>Answers cite the memories you recorded &mdash; not generic advice from the internet.</p>
+              </div>
+            </div>
+          </div>
+          <p class="provenance">
+            Source: PurrSafe iOS build, captured at 1320&times;2868 (6.7&Prime; @3x).
+            Asset <code>designs/project/uploads/03_ask_ai.png</code>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+<p class="pv-note">White band. Device left, numbered callouts right, provenance line beneath. The callout numerals are charcoal-on-coral. Collapses to one column at ≤1024px. The provenance line names the exact source asset — keep it, it is what makes the 'no mockups' claim checkable.</p>
+</body>
+</html>

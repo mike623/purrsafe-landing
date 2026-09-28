@@ -1,0 +1,100 @@
+<!-- @dsCard group="Foundations" name="Colour" subtitle="Brand, surface, ink, status — with the two AA traps" width="1200" height="920" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — Colour</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/preview.css">
+</head>
+<body>
+<div class="pv">
+
+  <div class="pv__group">
+    <span class="pv__label">Brand</span>
+    <div class="sw-grid">
+      <div class="sw">
+        <div class="sw__chip" style="background:var(--ps-teal);color:#fff">#006D77</div>
+        <p class="sw__meta"><b>Deep Teal</b> · <code>--ps-teal</code><br>Primary fill, links, every heading. 6.1:1 on white, 5.6:1 on canvas.</p>
+      </div>
+      <div class="sw">
+        <div class="sw__chip" style="background:var(--ps-teal-deep);color:#fff">#00575F</div>
+        <p class="sw__meta"><b>Teal Deep</b> · <code>--ps-teal-deep</code><br>Hover and active fill only.</p>
+      </div>
+      <div class="sw">
+        <div class="sw__chip" style="background:var(--ps-seafoam);color:var(--ps-ink)">#83C5BE</div>
+        <p class="sw__meta"><b>Seafoam</b> · <code>--ps-seafoam</code><br>Illustrative fills, ambient glow.</p>
+      </div>
+      <div class="sw">
+        <div class="sw__chip" style="background:var(--ps-coral);color:var(--ps-ink)">#E29578</div>
+        <p class="sw__meta"><b>Warm Coral</b> · <code>--ps-coral</code><br>Accent <b>surfaces</b>. Label on coral is charcoal (5.8:1), never white (2.4:1).</p>
+      </div>
+      <div class="sw">
+        <div class="sw__chip" style="background:var(--ps-teal);color:var(--ps-coral-tint)">#FFD9C4</div>
+        <p class="sw__meta"><b>Coral Tint</b> · <code>--ps-coral-tint</code><br>The only coral that carries text — the eyebrow on the teal band, 4.6:1. Coral proper is 2.55:1 there and fails.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Surface</span>
+    <div class="sw-grid">
+      <div class="sw">
+        <div class="sw__chip" style="background:var(--ps-canvas);color:var(--ps-teal)">#EDF6F9</div>
+        <p class="sw__meta"><b>Canvas</b> · <code>--ps-canvas</code><br>Page background.</p>
+      </div>
+      <div class="sw">
+        <div class="sw__chip" style="background:var(--ps-canvas-deep);color:var(--ps-teal)">#D8EDF2</div>
+        <p class="sw__meta"><b>Canvas Deep</b> · <code>--ps-canvas-deep</code><br>Alternating band, footer.</p>
+      </div>
+      <div class="sw">
+        <div class="sw__chip" style="background:var(--ps-surface);color:var(--ps-teal)">#FFFFFF</div>
+        <p class="sw__meta"><b>Surface</b> · <code>--ps-surface</code><br>Clay card fill.</p>
+      </div>
+      <div class="sw">
+        <div class="sw__chip" style="background:var(--ps-border);color:var(--ps-ink)">#E2F0F5</div>
+        <p class="sw__meta"><b>Border</b> · <code>--ps-border</code><br>The 2px clay inner highlight. Without it the cards read flat.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Ink</span>
+    <div class="sw-grid">
+      <div class="sw">
+        <div class="sw__chip" style="background:var(--ps-ink);color:#fff">#2D2D2D</div>
+        <p class="sw__meta"><b>Ink</b> · <code>--ps-ink</code><br>Body copy. 13.8:1 on white.</p>
+      </div>
+      <div class="sw">
+        <div class="sw__chip" style="background:var(--ps-ink-muted);color:#fff">#636363</div>
+        <p class="sw__meta"><b>Ink Muted</b> · <code>--ps-ink-muted</code><br>Every secondary and metadata line. 6.0:1 white, 5.5:1 canvas, 5.0:1 canvas-deep.</p>
+      </div>
+      <div class="sw">
+        <div class="sw__chip" style="background:#9B9490;color:#fff">#9B9490</div>
+        <p class="sw__meta"><b>Muted Stone</b> — <span class="pv__bad">not used on web</span><br>The app's metadata grey is 2.99:1 on white and fails AA. Ink Muted replaces it everywhere.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Status (inherited from the app, unused on the landing page so far)</span>
+    <div class="sw-grid">
+      <div class="sw"><div class="sw__chip" style="background:var(--ps-safe);color:var(--ps-ink)">#2ECC71</div><p class="sw__meta"><b>Safe</b></p></div>
+      <div class="sw"><div class="sw__chip" style="background:var(--ps-caution);color:var(--ps-ink)">#F39C12</div><p class="sw__meta"><b>Caution</b></p></div>
+      <div class="sw"><div class="sw__chip" style="background:var(--ps-unsafe);color:#fff">#E74C3C</div><p class="sw__meta"><b>Unsafe</b> — also the form error colour.</p></div>
+    </div>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Two rules that are not negotiable</span>
+    <p class="pv__note">
+      <span class="pv__bad">1.</span> Coral is never text and never a text background on white — <code>#E29578</code> is 2.39:1 against white <em>and</em> against a white label sitting on it. It is legal as a fill behind <code>--ps-ink</code> (5.8:1), which is why the product-proof callout numerals are charcoal-on-coral.<br>
+      <span class="pv__bad">2.</span> <code>#9B9490</code> never carries text. Use <code>--ps-ink-muted</code> — and note it is <code>#636363</code>, not the app's <code>#6B6B6B</code>, because <code>#6B6B6B</code> is only 4.4:1 on <code>--ps-canvas-deep</code>.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

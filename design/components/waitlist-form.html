@@ -1,0 +1,90 @@
+<!-- @dsCard group="Components" name="Waitlist form" subtitle="Rest, focus, error, pending, success" width="1000" height="760" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PurrSafe — Waitlist form</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/components.css">
+<link rel="stylesheet" href="../styles/preview.css">
+<style>
+  .frame { background: var(--ps-surface); border: 2px solid var(--ps-border); border-radius: var(--ps-r-lg); padding: var(--ps-6); box-shadow: var(--ps-shadow-sm); }
+  .is-focus { outline: var(--ps-focus); outline-offset: 2px; border-color: var(--ps-teal) !important; }
+</style>
+</head>
+<body>
+<div class="pv">
+
+  <div class="pv__group">
+    <span class="pv__label">Rest</span>
+    <div class="frame">
+      <form class="waitlist">
+        <label for="e1">Email address</label>
+        <input id="e1" name="email" type="email" inputmode="email" autocomplete="email" required placeholder="you@example.com">
+        <button class="btn btn--primary" type="submit">Get the app</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Focus</span>
+    <div class="frame">
+      <form class="waitlist">
+        <label for="e2">Email address</label>
+        <input id="e2" type="email" class="is-focus" value="mike@" autocomplete="email">
+        <button class="btn btn--primary" type="submit">Get the app</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Error — after submit only, never while typing</span>
+    <div class="frame">
+      <form class="waitlist">
+        <label for="e3">Email address</label>
+        <input id="e3" type="email" value="mike@" aria-invalid="true" aria-describedby="e3-err" autocomplete="email">
+        <button class="btn btn--primary" type="submit">Get the app</button>
+        <p class="waitlist__msg waitlist__msg--error" id="e3-err" role="alert">That doesn’t look like a complete email address.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Pending</span>
+    <div class="frame">
+      <form class="waitlist">
+        <label for="e4">Email address</label>
+        <input id="e4" type="email" value="mike@example.com" readonly autocomplete="email">
+        <button class="btn btn--primary" type="submit" data-pending="true" aria-busy="true">Adding you…</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Success</span>
+    <div class="frame">
+      <form class="waitlist">
+        <p class="waitlist__msg waitlist__msg--success" role="status">You’re on the list. We’ll email mike@example.com when your invite is ready.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="pv__group">
+    <span class="pv__label">Spec</span>
+    <p class="pv__note">
+      Canvas fill, 2px <code>--ps-border-cool</code>, 20px radius, 48px min-height.
+      The label is visually hidden but present and bound with <code>for</code> — a placeholder is not a label.
+      <code>type="email"</code> + <code>autocomplete="email"</code> + <code>inputmode="email"</code> + <code>required</code>.
+      Error text uses <code>--ps-unsafe-ink</code> <code>#C9372A</code> (5.2:1), <b>not</b> <code>--ps-unsafe</code> <code>#E74C3C</code>,
+      which is only 3.8:1 on white and fails as text. Error is <code>role="alert"</code> + <code>aria-describedby</code>;
+      success is <code>role="status"</code> so it is announced without stealing focus.
+      Validate on submit, not on keystroke.
+    </p>
+    <p class="pv__note"><b>Open:</b> there is no endpoint yet. GitHub Pages is static, so this needs a hosted form service or a Supabase edge function before the primary CTA does anything. Tracked in PUR-76.</p>
+  </div>
+
+</div>
+</body>
+</html>

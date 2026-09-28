@@ -1,0 +1,86 @@
+/* PurrSafe landing — design tokens
+ * Source of truth for PUR-71 prototype. Values inherited from the mobile
+ * app design system (catty2/DESIGN.md) and constrained to WCAG AA on web.
+ * SWE: copy this file into the Astro project and import it once globally.
+ */
+
+:root {
+  /* ---- Brand ---------------------------------------------------------- */
+  --ps-teal: #006D77;          /* primary: CTA fill, links, headings        */
+  --ps-teal-deep: #00575F;     /* hover/active fill                          */
+  --ps-seafoam: #83C5BE;       /* light accent, illustrative fills           */
+  --ps-coral: #E29578;         /* accent SURFACES only — never text, any background */
+  --ps-coral-tint: #FFD9C4;    /* the ONLY coral that carries text: eyebrow on the teal band, 4.6:1 */
+  --ps-coral-light: rgba(226, 149, 120, 0.22);
+  --ps-coral-dim: rgba(226, 149, 120, 0.10);
+  --ps-teal-dim: rgba(0, 109, 119, 0.12);
+
+  /* ---- Surfaces ------------------------------------------------------- */
+  --ps-canvas: #EDF6F9;        /* page background (Ice Blue)                 */
+  --ps-canvas-deep: #D8EDF2;   /* alternating band / secondary surface       */
+  --ps-surface: #FFFFFF;       /* clay card                                  */
+  --ps-border: #E2F0F5;        /* clay card inner-highlight border           */
+  --ps-border-cool: #C8E0E8;   /* dividers on canvas                         */
+
+  /* ---- Text ----------------------------------------------------------- */
+  --ps-ink: #2D2D2D;           /* body + headings          13.8:1 on white   */
+  --ps-ink-muted: #636363;     /* secondary text  6.0 white / 5.5 canvas /
+                                  5.0 on canvas-deep — clears AA on ALL
+                                  three page backgrounds. #6B6B6B was only
+                                  4.4:1 on --ps-canvas-deep and failed in
+                                  the how-it-works band and the footer.     */
+  /* #9B9490 (app "Muted Stone") is 2.99:1 on white — DO NOT use for text
+     on the landing page. Use --ps-ink-muted instead. */
+
+  /* ---- Status --------------------------------------------------------- */
+  --ps-safe: #2ECC71;
+  --ps-caution: #F39C12;
+  --ps-unsafe: #E74C3C;      /* fills and icons only — 3.8:1 on white */
+  --ps-unsafe-ink: #C9372A;  /* error TEXT — 5.2:1 on white */
+
+  /* ---- Type ----------------------------------------------------------- */
+  --ps-font: "Nunito Sans", ui-rounded, "SF Pro Rounded", system-ui,
+             -apple-system, "Segoe UI", sans-serif;
+
+  --ps-display: 800 clamp(2.5rem, 1.6rem + 3.4vw, 4rem) / 1.05 var(--ps-font);
+  --ps-h2:      800 clamp(1.875rem, 1.4rem + 1.6vw, 2.5rem) / 1.15 var(--ps-font);
+  --ps-h3:      700 1.375rem / 1.3 var(--ps-font);
+  --ps-lead:    400 clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem) / 1.6 var(--ps-font);
+  --ps-body:    400 1.0625rem / 1.65 var(--ps-font);
+  --ps-small:   400 0.9375rem / 1.5 var(--ps-font);
+  --ps-eyebrow: 700 0.8125rem / 1.2 var(--ps-font);
+
+  --ps-track-display: -0.02em;
+  --ps-track-h2: -0.015em;
+  --ps-track-eyebrow: 0.08em;
+
+  /* ---- Spacing (4pt) --------------------------------------------------- */
+  --ps-1: 4px;   --ps-2: 8px;   --ps-3: 12px;  --ps-4: 16px;
+  --ps-5: 24px;  --ps-6: 32px;  --ps-7: 48px;  --ps-8: 64px;
+  --ps-9: 96px;  --ps-10: 128px;
+
+  --ps-section-y: clamp(72px, 8vw, 128px);
+  --ps-container: 1200px;
+  --ps-gutter: clamp(20px, 4vw, 32px);
+
+  /* ---- Radii ----------------------------------------------------------- */
+  --ps-r-sm: 12px;
+  --ps-r-card: 20px;   /* signature clay radius */
+  --ps-r-lg: 28px;     /* large surfaces, device frame inner */
+  --ps-r-pill: 999px;
+
+  /* ---- Elevation ------------------------------------------------------- */
+  --ps-shadow-sm: 0 2px 8px rgba(45, 45, 45, 0.06);
+  --ps-shadow-md: 0 4px 10px rgba(45, 45, 45, 0.12);
+  --ps-shadow-lg: 0 8px 16px rgba(45, 45, 45, 0.16);
+  --ps-shadow-xl: 0 24px 60px rgba(45, 45, 45, 0.18);
+  --ps-glow-teal: 0 4px 10px rgba(0, 109, 119, 0.40);
+  --ps-glow-teal-strong: 0 6px 18px rgba(0, 109, 119, 0.45);
+
+  /* ---- Interaction ------------------------------------------------------ */
+  --ps-focus: 3px solid var(--ps-teal);
+  --ps-focus-offset: 3px;
+  --ps-tap-min: 48px;          /* minimum interactive box, all breakpoints  */
+  --ps-ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --ps-dur: 180ms;
+}
