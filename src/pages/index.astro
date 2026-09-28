@@ -1,0 +1,95 @@
+---
+import '../styles/global.css';
+
+const base = import.meta.env.BASE_URL;
+const pageUrl = 'https://mike623.github.io/purrsafe-landing/';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="PurrSafe keeps cat care notes, food-safety checks, and everyday memories together in one calm, private place." />
+    <meta name="theme-color" content="#006D77" />
+    <link rel="canonical" href={pageUrl} />
+    <link rel="icon" href={`${base}og-card.svg`} type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:title" content="PurrSafe — Know what is safe. Remember what matters." />
+    <meta property="og:description" content="Private cat care memories, food-safety checks, and useful context in one calm place." />
+    <meta property="og:image" content={`${pageUrl}og-card.svg`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>PurrSafe — Cat care, kept together</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href={`${base}#top`} aria-label="PurrSafe home">
+        <span class="brand-mark" aria-hidden="true">⌁</span>
+        <span>PurrSafe</span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href={`${base}#how-it-works`}>How it works</a>
+        <a href={`${base}#safety`}>Safety</a>
+        <a href={`${base}#memory`}>Memory</a>
+        <a href={`${base}#faq`}>FAQ</a>
+      </nav>
+      <a class="button button-small button-coral" href="mailto:hello@purrsafe.app?subject=PurrSafe%20private%20beta">Join private beta <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main id="top">
+      <section class="hero section-wrap" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-dot"></span> A calmer way to care for your cat</p>
+          <h1 id="hero-title">Know what is safe.<br /><em>Remember what matters.</em></h1>
+          <p class="hero-lede">PurrSafe brings food checks, care notes, and the little moments you never want to forget into one private, thoughtful place.</p>
+          <div class="hero-actions">
+            <a class="button button-coral" href="mailto:hello@purrsafe.app?subject=PurrSafe%20private%20beta">Join the private beta <span aria-hidden="true">→</span></a>
+            <a class="text-link" href={`${base}#how-it-works`}>See how it works <span aria-hidden="true">↓</span></a>
+          </div>
+          <p class="microcopy"><span aria-hidden="true">✦</span> No medical advice. No noisy feeds. Just useful context.</p>
+        </div>
+        <div class="hero-art" aria-label="Illustration of a cat care dashboard" role="img">
+          <div class="sun-shape"></div>
+          <div class="cat-illustration" aria-hidden="true"><span class="ear left"></span><span class="ear right"></span><span class="cat-face">•ᴗ•</span><span class="whiskers">⌁  ⌁</span></div>
+          <div class="phone-card">
+            <div class="phone-top"><span>Today</span><span class="tiny-avatar">M</span></div>
+            <p class="phone-title">Miso's care log</p>
+            <div class="log-row"><span class="log-icon teal-icon">✓</span><span><strong>Breakfast</strong><small>07:42 · Salmon &amp; rice</small></span><span class="status-dot"></span></div>
+            <div class="log-row"><span class="log-icon coral-icon">♡</span><span><strong>Window nap</strong><small>09:15 · 42 minutes</small></span></div>
+            <div class="safe-note"><span>✓</span><span><strong>Ingredient check</strong><small>Looks safe to explore</small></span></div>
+          </div>
+          <div class="floating-note"><span class="note-paw">✦</span><span><strong>One less thing<br />to wonder about.</strong></span></div>
+        </div>
+      </section>
+
+      <section class="problem section-wrap section-padded" aria-labelledby="problem-title">
+        <div class="section-intro centered narrow"><p class="eyebrow">The everyday problem</p><h2 id="problem-title">Care is easier when the context is close.</h2><p>Important details have a habit of ending up everywhere: a text thread, a camera roll, a sticky note, or nowhere at all.</p></div>
+        <div class="problem-grid"><article class="problem-card"><span class="card-number">01</span><h3>Scattered notes</h3><p>Meals, medication questions, vet visits, and routines are hard to piece together when they live in different places.</p></article><article class="problem-card problem-card-highlight"><span class="card-number">02</span><h3>Uncertain moments</h3><p>When something looks unfamiliar, you want a useful starting point — not a rabbit hole or a guess.</p></article><article class="problem-card"><span class="card-number">03</span><h3>Forgotten goodness</h3><p>The funny habits and tiny milestones deserve more than a quick scroll through old photos.</p></article></div>
+      </section>
+
+      <section id="memory" class="benefits section-wrap section-padded" aria-labelledby="benefits-title">
+        <div class="section-intro"><p class="eyebrow">One home for cat care</p><h2 id="benefits-title">Useful on busy days.<br /><em>Meaningful over time.</em></h2></div>
+        <div class="benefit-grid"><article class="benefit-card benefit-scan"><div class="benefit-icon">⌕</div><h3>Check before you share</h3><p>Scan a food label for a plain-language starting point. PurrSafe helps you spot ingredients worth asking your vet about.</p><a href={`${base}#safety`}>About safety <span aria-hidden="true">→</span></a></article><article class="benefit-card benefit-log"><div class="benefit-icon">✎</div><h3>Keep the little things</h3><p>Log meals, routines, symptoms, vet visits, and sweet everyday moments while they are fresh.</p><a href={`${base}#how-it-works`}>See memory in action <span aria-hidden="true">→</span></a></article><article class="benefit-card benefit-ask"><div class="benefit-icon">⌁</div><h3>Find the thread</h3><p>Ask natural questions about your notes and get a concise view of what you have already recorded.</p><a href={`${base}#safety`}>Our AI approach <span aria-hidden="true">→</span></a></article><article class="benefit-card benefit-profile"><div class="benefit-icon">♡</div><h3>Make it theirs</h3><p>Keep each cat’s profile and context together, so care feels personal — even when someone else is helping.</p><a href={`${base}#faq`}>Common questions <span aria-hidden="true">→</span></a></article></div>
+      </section>
+
+      <section id="how-it-works" class="steps section-wrap section-padded" aria-labelledby="steps-title">
+        <div class="steps-heading"><p class="eyebrow">How it works</p><h2 id="steps-title">Three small steps.<br /><em>A lot more clarity.</em></h2></div>
+        <ol class="step-list"><li><span class="step-count">01</span><div><h3>Capture</h3><p>Log a moment, save a food label, or add a note in your own words.</p></div><span class="step-arrow" aria-hidden="true">↘</span></li><li><span class="step-count">02</span><div><h3>Understand</h3><p>Get helpful organization and context without pretending an app replaces your vet.</p></div><span class="step-arrow" aria-hidden="true">↘</span></li><li><span class="step-count">03</span><div><h3>Remember</h3><p>Return to a clear history when you need it — and enjoy it when you do not.</p></div><span class="step-arrow" aria-hidden="true">↘</span></li></ol>
+      </section>
+
+      <section class="proof section-wrap section-padded" aria-labelledby="proof-title">
+        <div class="proof-visual"><div class="mockup-window"><div class="window-bar"><span></span><span></span><span></span><small>purrsafe / memory</small></div><div class="memory-header"><div><p class="muted-label">Miso · all memories</p><h3>Good to know</h3></div><span class="round-plus">+</span></div><div class="memory-highlight"><span class="big-quote">“</span><p>She has been choosing the sunny corner after breakfast lately.</p><small>Added today · Routine</small></div><div class="timeline-row"><span class="timeline-marker"></span><div><strong>Salmon &amp; rice</strong><small>Breakfast · Today, 07:42</small></div><span class="timeline-tag">meal</span></div><div class="timeline-row"><span class="timeline-marker coral-marker"></span><div><strong>New feather toy</strong><small>Play · Yesterday, 18:20</small></div><span class="timeline-tag">moment</span></div></div></div>
+        <div class="proof-copy"><p class="eyebrow">Product proof</p><h2 id="proof-title">A record that feels like <em>yours.</em></h2><p>Designed for real life: quick enough to use one-handed, gentle enough to come back to, and structured enough to help when details matter.</p><ul class="check-list"><li><span>✓</span> Your words, your cat, your context</li><li><span>✓</span> Searchable history, not a social feed</li><li><span>✓</span> Built for private beta feedback</li></ul></div>
+      </section>
+
+      <section id="safety" class="trust section-wrap section-padded" aria-labelledby="trust-title"><div class="trust-panel"><div class="trust-heading"><p class="eyebrow">Trust, by design</p><h2 id="trust-title">Helpful should also mean <em>honest.</em></h2></div><div class="trust-points"><div><span class="trust-icon">⌂</span><h3>Private by default</h3><p>Your cat’s care history is personal. We design around minimizing collection and keeping your notes for you.</p></div><div><span class="trust-icon">!</span><h3>Clear limitations</h3><p>PurrSafe is not a veterinarian and does not diagnose, prescribe, or replace professional care.</p></div><div><span class="trust-icon">↗</span><h3>Human judgment first</h3><p>AI can organize what you record. Important health decisions belong with a qualified veterinary professional.</p></div></div></div></section>
+
+      <section id="faq" class="faq section-wrap section-padded" aria-labelledby="faq-title"><div class="faq-heading"><p class="eyebrow">Questions, answered</p><h2 id="faq-title">The short version.</h2><p>More answers will come as private beta opens.</p></div><div class="faq-list"><details><summary>What is PurrSafe?</summary><p>PurrSafe is a private cat care and memory app for recording everyday events, keeping context together, and exploring food labels with a helpful starting point.</p></details><details><summary>Is PurrSafe a medical app?</summary><p>No. It does not diagnose or provide medical advice. If your cat may be unwell or you are worried, contact your veterinarian.</p></details><details><summary>When can I try it?</summary><p>PurrSafe is opening gradually through a private beta. Join the waitlist and we will share availability when places are ready.</p></details><details><summary>What happens to my data?</summary><p>We are building with a privacy-first posture: collect less, explain more, and never sell personal data. Full details will be published before public launch.</p></details></div></section>
+
+      <section class="final-cta section-wrap" aria-labelledby="cta-title"><div class="cta-cat" aria-hidden="true">◡̈</div><p class="eyebrow">Come along for the beta</p><h2 id="cta-title">More calm. More context.<br /><em>More good cat days.</em></h2><p>Be one of the first to shape a kinder cat-care companion.</p><a class="button button-dark" href="mailto:hello@purrsafe.app?subject=PurrSafe%20private%20beta">Join the private beta <span aria-hidden="true">↗</span></a></section>
+    </main>
+
+    <footer class="site-footer section-wrap"><a class="brand" href={`${base}#top`}><span class="brand-mark" aria-hidden="true">⌁</span><span>PurrSafe</span></a><p>Know what is safe. Remember what matters.</p><div class="footer-links"><a href="mailto:hello@purrsafe.app">Contact</a><a href={`${base}#safety`}>Privacy posture</a><a href={`${base}#faq`}>FAQ</a><a href="https://github.com/mike623/purrsafe-landing">GitHub <span aria-hidden="true">↗</span></a></div><small>© 2026 PurrSafe · Built for cats and the people who love them.</small></footer>
+  </body>
+</html>
