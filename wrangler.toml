@@ -5,7 +5,7 @@ pages_build_output_dir = "./dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "purrsafe-beta"
-database_id = "RELEASEOPS_SET_D1_DATABASE_ID"
+database_id = "cca9d9b1-9716-4356-a587-e77db40f67dd"
 migrations_dir = "migrations"
 
 [[ratelimits]]
