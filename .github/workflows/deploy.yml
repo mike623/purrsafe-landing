@@ -35,9 +35,10 @@ jobs:
         run: npm test
       - name: Build
         env:
-          PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}
+          # Pull requests need a non-production public key to compile the static widget.
+          # The protected deploy job below remains fail-closed on the real environment value.
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY || 'ci-placeholder' }}
         run: |
-          test -n "$PUBLIC_TURNSTILE_SITE_KEY"
           npm run build
       - name: Verify static output
         run: test -f dist/index.html && test -f dist/sitemap-index.xml
