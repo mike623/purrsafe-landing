@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { onRequestPost } from '../functions/api/beta-waitlist';
 import { onRequestGet as verify } from '../functions/api/beta-waitlist/verify';
 import { onRequestGet as unsubscribe } from '../functions/api/beta-waitlist/unsubscribe';
-import { type D1Database, type D1Statement, type WaitlistEnv } from '../functions/api/beta-waitlist/_shared';
+import { hash, type D1Database, type D1Statement, type WaitlistEnv } from '../functions/api/beta-waitlist/_shared.js';
 
 const env = (db: D1Database): WaitlistEnv & Record<string, unknown> => ({
   DB: db,
@@ -15,8 +15,30 @@ const env = (db: D1Database): WaitlistEnv & Record<string, unknown> => ({
   ALLOWED_ORIGINS: 'https://pursafe.example',
 });
 
-function database(options: { rateCount?: number; changes?: number } = {}): D1Database {
+type TokenRow = {
+  verificationTokenHash: string;
+  verificationExpiresAt: string;
+  verificationUsedAt: string | null;
+  unsubscribeTokenHash: string;
+  unsubscribeExpiresAt: string;
+  unsubscribeUsedAt: string | null;
+  verifiedAt: string | null;
+  unsubscribedAt: string | null;
+};
+
+function database(options: { rateCount?: number; token?: Partial<TokenRow> } = {}): D1Database {
   let rateCount = options.rateCount ?? 0;
+  const token: TokenRow = {
+    verificationTokenHash: 'verification-hash',
+    verificationExpiresAt: new Date(Date.now() + 60_000).toISOString(),
+    verificationUsedAt: null,
+    unsubscribeTokenHash: 'unsubscribe-hash',
+    unsubscribeExpiresAt: new Date(Date.now() + 60_000).toISOString(),
+    unsubscribeUsedAt: null,
+    verifiedAt: null,
+    unsubscribedAt: null,
+    ...options.token,
+  };
   return {
     prepare(query: string): D1Statement {
       let values: unknown[] = [];
@@ -30,7 +52,24 @@ function database(options: { rateCount?: number; changes?: number } = {}): D1Dat
           return null;
         },
         async run() {
-          if (query.includes('verification_token_hash') || query.includes('unsubscribe_token_hash')) return { meta: { changes: options.changes ?? 1 } };
+          if (query.includes('verification_token_hash')) {
+            const [verifiedAt, tokenUsedAt, tokenHash, expiresAt] = values as [string, string, string, string];
+            const changes = tokenHash === token.verificationTokenHash && token.verificationExpiresAt > expiresAt && token.verificationUsedAt === null ? 1 : 0;
+            if (changes) {
+              token.verifiedAt = verifiedAt;
+              token.verificationUsedAt = tokenUsedAt;
+            }
+            return { meta: { changes } };
+          }
+          if (query.includes('unsubscribe_token_hash')) {
+            const [unsubscribedAt, tokenUsedAt, tokenHash, expiresAt] = values as [string, string, string, string];
+            const changes = tokenHash === token.unsubscribeTokenHash && token.unsubscribeExpiresAt > expiresAt && token.unsubscribeUsedAt === null ? 1 : 0;
+            if (changes) {
+              token.unsubscribedAt = unsubscribedAt;
+              token.unsubscribeUsedAt = tokenUsedAt;
+            }
+            return { meta: { changes } };
+          }
           void values;
           return { meta: { changes: 1 } };
         },
@@ -83,18 +122,56 @@ describe('beta waitlist security controls', () => {
     expect(emailBody.html).toContain('/unsubscribe?token=');
   });
 
-  it('consumes verification token once and redirects without token or email', async () => {
-    const db = database({ changes: 1 });
-    const response = await verify({ request: new Request('https://pursafe.example/api/beta-waitlist/verify?token=verify-token'), env: env(db) });
+  it('accepts a verification token once, then rejects reuse', async () => {
+    const db = database({ token: { verificationTokenHash: await hash('verify-token') } });
+    const request = new Request('https://pursafe.example/api/beta-waitlist/verify?token=verify-token');
+    const response = await verify({ request, env: env(db) });
     expect(response.status).toBe(303);
     expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=verified');
     expect(response.headers.get('location')).not.toContain('token');
-
+    const reused = await verify({ request, env: env(db) });
+    expect(reused.headers.get('location')).toBe('https://pursafe.example/?beta=invalid');
   });
 
-  it('expires and one-time consumes unsubscribe token', async () => {
-    const response = await unsubscribe({ request: new Request('https://pursafe.example/api/beta-waitlist/unsubscribe?token=unsubscribe-token'), env: env(database({ changes: 0 })) });
-    expect(response.status).toBe(303);
+  it('rejects expired verification tokens', async () => {
+    const db = database({
+      token: {
+        verificationTokenHash: await hash('expired-token'),
+        verificationExpiresAt: new Date(Date.now() - 1_000).toISOString(),
+      },
+    });
+    const response = await verify({ request: new Request('https://pursafe.example/api/beta-waitlist/verify?token=expired-token'), env: env(db) });
     expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=invalid');
+  });
+
+  it('accepts an unsubscribe token once, then rejects reuse and expiry', async () => {
+    const db = database({ token: { unsubscribeTokenHash: await hash('unsubscribe-token') } });
+    const request = new Request('https://pursafe.example/api/beta-waitlist/unsubscribe?token=unsubscribe-token');
+    const response = await unsubscribe({ request, env: env(db) });
+    expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=unsubscribed');
+    const reused = await unsubscribe({ request, env: env(db) });
+    expect(reused.headers.get('location')).toBe('https://pursafe.example/?beta=invalid');
+
+    const expiredDb = database({
+      token: {
+        unsubscribeTokenHash: await hash('expired-unsubscribe-token'),
+        unsubscribeExpiresAt: new Date(Date.now() - 1_000).toISOString(),
+      },
+    });
+    const expired = await unsubscribe({ request: new Request('https://pursafe.example/api/beta-waitlist/unsubscribe?token=expired-unsubscribe-token'), env: env(expiredDb) });
+    expect(expired.headers.get('location')).toBe('https://pursafe.example/?beta=invalid');
+  });
+
+  it('keeps verification and unsubscribe token scopes separate', async () => {
+    const db = database({
+      token: {
+        verificationTokenHash: await hash('verify-token'),
+        unsubscribeTokenHash: await hash('unsubscribe-token'),
+      },
+    });
+    const verificationWithUnsubscribeToken = await verify({ request: new Request('https://pursafe.example/api/beta-waitlist/verify?token=unsubscribe-token'), env: env(db) });
+    const unsubscribeWithVerificationToken = await unsubscribe({ request: new Request('https://pursafe.example/api/beta-waitlist/unsubscribe?token=verify-token'), env: env(db) });
+    expect(verificationWithUnsubscribeToken.headers.get('location')).toBe('https://pursafe.example/?beta=invalid');
+    expect(unsubscribeWithVerificationToken.headers.get('location')).toBe('https://pursafe.example/?beta=invalid');
   });
 });

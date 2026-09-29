@@ -1,6 +1,5 @@
-import { hash, redirect, type WaitlistEnv } from '../beta-waitlist/_shared';
-interface Env extends WaitlistEnv {}
-export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
+import { hash, redirect, type WaitlistEnv } from '../beta-waitlist/_shared.js';
+export const onRequestGet = async ({ request, env }: { request: Request; env: WaitlistEnv }) => {
   const url = new URL(request.url);
   const rawToken = url.searchParams.get('token');
   if (!rawToken) return redirect(env, 'invalid');

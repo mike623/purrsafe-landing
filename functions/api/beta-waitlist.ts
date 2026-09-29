@@ -1,4 +1,4 @@
-import { createToken, hash, type D1Database } from './beta-waitlist/_shared';
+import { createToken, hash, type D1Database } from './beta-waitlist/_shared.js';
 
 interface Env {
   DB: D1Database;
