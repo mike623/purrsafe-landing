@@ -271,7 +271,7 @@ const asset = (path: string) => `${import.meta.env.BASE_URL}assets/${path}`;
         <p class="lead" style="margin-inline:auto">
           Leave your email and we&rsquo;ll send an invite as soon as a slot opens.
         </p>
-        <form class="waitlist" action={`${import.meta.env.BASE_URL}api/beta-register`} method="post" data-waitlist-form>
+        <form class="waitlist" action={`${import.meta.env.BASE_URL}api/beta-register`} method="post" data-waitlist-form novalidate>
           <label for="email">Email address</label>
           <input id="email" name="email" type="email" inputmode="email"
                  autocomplete="email" required placeholder="you@example.com" aria-describedby="waitlist-msg">
@@ -325,6 +325,15 @@ const asset = (path: string) => `${import.meta.env.BASE_URL}assets/${path}`;
     event.preventDefault();
     if (!(form instanceof HTMLFormElement) || !(status instanceof HTMLElement)) return;
 
+    if (email instanceof HTMLInputElement && !email.validity.valid) {
+      email.setAttribute('aria-invalid', 'true');
+      status.setAttribute('role', 'alert');
+      status.className = 'waitlist__msg waitlist__status waitlist__msg--error';
+      status.textContent = 'Enter a valid email address.';
+      email.focus();
+      return;
+    }
+
     const button = form.querySelector('button');
     if (button instanceof HTMLButtonElement) {
       button.disabled = true;
@@ -344,11 +353,12 @@ const asset = (path: string) => `${import.meta.env.BASE_URL}assets/${path}`;
       const result = await response.json() as { message?: string };
       status.textContent = result.message ?? (response.ok ? 'You are on the waitlist.' : 'Registration is temporarily unavailable.');
       status.classList.add(response.ok ? 'waitlist__msg--success' : 'waitlist__msg--error');
-      if (!response.ok && response.status === 400 && email instanceof HTMLInputElement) email.setAttribute('aria-invalid', 'true');
+      status.setAttribute('role', response.ok ? 'status' : 'alert');
       status.focus();
     } catch {
       status.textContent = 'Registration is temporarily unavailable. Try again later.';
       status.classList.add('waitlist__msg--error');
+      status.setAttribute('role', 'alert');
       status.focus();
     } finally {
       if (button instanceof HTMLButtonElement) {
