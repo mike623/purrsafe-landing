@@ -399,6 +399,11 @@ section { padding-block: var(--ps-section-y); }
   flex-basis: 100%; text-align: center;
   font: var(--ps-small); font-weight: 700;
 }
+.waitlist__honeypot {
+  position: absolute !important; left: -10000px; width: 1px !important; height: 1px !important;
+  opacity: 0; pointer-events: none;
+}
+.waitlist__status { flex-basis: 100%; min-height: 1.5em; }
 .waitlist__msg--error   { color: var(--ps-unsafe-ink); }
 .waitlist__msg--success { color: var(--ps-teal); }
 /* pending: the button keeps its box so the row does not reflow mid-submit */

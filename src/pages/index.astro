@@ -7,7 +7,7 @@ import '../styles/global.css';
 <header class="site-header">
   <div class="wrap">
     <a class="brand" href="#top">
-      <img class="brand__mark" src="/purrsafe-landing/assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
+      <img class="brand__mark" src="/assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
       PurrSafe
     </a>
     <nav class="nav" aria-label="Primary">
@@ -48,11 +48,11 @@ import '../styles/global.css';
 
       <div class="hero__stage">
         <div class="device device--front">
-          <img src="/purrsafe-landing/assets/app-memory-feed@2x.png" width="880" height="1912"
+          <img src="/assets/app-memory-feed@2x.png" width="880" height="1912"
                alt="PurrSafe memory feed on iPhone, showing four dated entries for the cat Mochi: a play note, a sneezing note being monitored, a 4.2 kg weight check, and a tuna pâté breakfast.">
         </div>
         <div class="device device--back" aria-hidden="true">
-          <img src="/purrsafe-landing/assets/app-ask-ai@2x.png" width="880" height="1912" alt="">
+          <img src="/assets/app-ask-ai@2x.png" width="880" height="1912" alt="">
         </div>
       </div>
     </div>
@@ -122,7 +122,7 @@ import '../styles/global.css';
           <h3>Capture</h3>
           <p>Pick the pet, pick the type, add a line or a photo. It takes seconds.</p>
           <div class="step__shot">
-            <img src="/purrsafe-landing/assets/app-add-event@2x.png" width="880" height="1912"
+            <img src="/assets/app-add-event@2x.png" width="880" height="1912"
                  alt="The PurrSafe add-memory sheet: a pet selector with Mochi chosen, memory type chips for Food, Health, Weight, Play and Note with Weight selected, a title field, and a body-weight input in kilograms.">
           </div>
         </div>
@@ -131,7 +131,7 @@ import '../styles/global.css';
           <h3>Understand</h3>
           <p>Each entry is typed and tagged, so the log stays structured without extra work.</p>
           <div class="step__shot">
-            <img src="/purrsafe-landing/assets/app-memory-feed@2x.png" width="880" height="1912"
+            <img src="/assets/app-memory-feed@2x.png" width="880" height="1912"
                  alt="The PurrSafe memory feed filtered by pet and by category chips for Food, Health, Vet and Behavior.">
           </div>
         </div>
@@ -140,7 +140,7 @@ import '../styles/global.css';
           <h3>Remember</h3>
           <p>Ask a question later. The assistant answers from that cat&rsquo;s memories only.</p>
           <div class="step__shot">
-            <img src="/purrsafe-landing/assets/app-ask-ai@2x.png" width="880" height="1912"
+            <img src="/assets/app-ask-ai@2x.png" width="880" height="1912"
                  alt="The PurrSafe Ask AI screen, headed “Whose story today?”, listing Mochi with a resumable session and LUNU with a start button.">
           </div>
         </div>
@@ -163,7 +163,7 @@ import '../styles/global.css';
       <div class="proof__grid">
         <div class="proof__stage">
           <div class="device">
-            <img src="/purrsafe-landing/assets/app-ask-ai@2x.png" width="880" height="1912"
+            <img src="/assets/app-ask-ai@2x.png" width="880" height="1912"
                  alt="PurrSafe Ask AI screen showing a resumable session for Mochi, a British Shorthair, with the last question “What did Mochi eat recently?” from 28 minutes ago.">
           </div>
         </div>
@@ -267,13 +267,15 @@ import '../styles/global.css';
         <p class="lead" style="margin-inline:auto">
           Leave your email and we&rsquo;ll send an invite as soon as a slot opens.
         </p>
-        <form class="waitlist" action="#" method="post">
+        <form class="waitlist" action="/api/beta-register" method="post" data-waitlist-form>
           <label for="email">Email address</label>
           <input id="email" name="email" type="email" inputmode="email"
                  autocomplete="email" required placeholder="you@example.com">
+          <input name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" class="waitlist__honeypot">
           <button class="btn btn--primary" type="submit">Get the app</button>
         </form>
         <p class="meta">No spam. One email when your invite is ready.</p>
+        <p class="meta waitlist__status" data-waitlist-status role="status" aria-live="polite"></p>
       </div>
     </div>
   </section>
@@ -284,7 +286,7 @@ import '../styles/global.css';
   <div class="wrap">
     <div class="footer__grid">
       <a class="brand" href="#top">
-        <img class="brand__mark" src="/purrsafe-landing/assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
+        <img class="brand__mark" src="/assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
         PurrSafe
       </a>
       <nav class="footer__links" aria-label="Footer">
@@ -300,3 +302,33 @@ import '../styles/global.css';
     </p>
   </div>
 </footer>
+
+<script>
+  const form = document.querySelector('[data-waitlist-form]');
+  const status = document.querySelector('[data-waitlist-status]');
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!(form instanceof HTMLFormElement) || !(status instanceof HTMLElement)) return;
+
+    const button = form.querySelector('button');
+    if (button) button.disabled = true;
+    status.textContent = 'Joining the waitlist…';
+
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(form))),
+      });
+      const result = await response.json() as { message?: string };
+      status.textContent = response.ok
+        ? result.message ?? 'You are on the waitlist.'
+        : result.message ?? 'Registration is temporarily unavailable.';
+    } catch {
+      status.textContent = 'Registration is temporarily unavailable. Try again later.';
+    } finally {
+      if (button) button.disabled = false;
+    }
+  });
+</script>

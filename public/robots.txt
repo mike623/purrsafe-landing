@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mike623.github.io/purrsafe-landing/sitemap-index.xml
+Sitemap: https://pursafe.selenasolutions.com/sitemap-index.xml
