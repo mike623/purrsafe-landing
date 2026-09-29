@@ -23,7 +23,11 @@ npm run preview
 
 Pull requests and pushes to `main` run `npm run check` and `npm run build`. A manual, protected GitHub Actions dispatch deploys `dist` to Cloudflare Pages with `wrangler`. Configure the `cloudflare-pages` environment with `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and the `CLOUDFLARE_PAGES_PROJECT` variable before enabling deployment.
 
-The Pages Functions beta flow requires a D1 binding named `DB` and these environment values: `TURNSTILE_SECRET`, `RESEND_API_KEY`, `RESEND_FROM`, `PUBLIC_SITE_URL`, and `ALLOWED_ORIGINS`. Public build value: `PUBLIC_TURNSTILE_SITE_KEY`. Apply `migrations/0001_beta_registrations.sql` to the D1 database before traffic.
+The Pages Functions beta flow requires a D1 binding named `DB` and these environment values: `TURNSTILE_SECRET`, `TURNSTILE_HOSTNAME`, `TURNSTILE_ACTION`, `RESEND_API_KEY`, `RESEND_FROM`, `PUBLIC_SITE_URL`, and `ALLOWED_ORIGINS`. Public build value: `PUBLIC_TURNSTILE_SITE_KEY`. Turnstile `hostname` and `action` claims must match the configured values; Turnstile success is not a quota.
+
+Pages preview and production use separate environment configuration. Configure D1, secrets, and vars in both Pages environments; preview must use a non-production D1 database and preview origin, while production uses the production D1 database and canonical origin. Keep all secret values in Pages/Wrangler, never in git.
+
+Create/configure the D1 binding as `DB`, then apply the migration from the repository root with the exact command `npx wrangler d1 migrations apply purrsafe-beta --remote`. Run it once per target database before traffic. Do not use production credentials for preview.
 
 ## Accessibility baseline
 

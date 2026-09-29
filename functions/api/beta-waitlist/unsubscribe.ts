@@ -1,13 +1,10 @@
-interface Env { DB: D1Database }
-const hash = async (value: string) => {
-  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
-  return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
-};
+import { hash, redirect, type WaitlistEnv } from '../beta-waitlist/_shared';
+interface Env extends WaitlistEnv {}
 export const onRequestGet = async ({ request, env }: { request: Request; env: Env }) => {
   const url = new URL(request.url);
-  const email = url.searchParams.get('email')?.trim().toLowerCase();
   const rawToken = url.searchParams.get('token');
-  if (!email || !rawToken) return new Response('Invalid unsubscribe link.', { status: 400 });
-  const result = await env.DB.prepare('UPDATE beta_registrations SET unsubscribed_at = ? WHERE email = ? AND verification_token_hash = ?').bind(new Date().toISOString(), email, await hash(rawToken)).run();
-  return new Response(result.meta.changes ? 'You are unsubscribed from PurrSafe beta emails.' : 'This unsubscribe link is invalid.', { status: result.meta.changes ? 200 : 400, headers: { 'content-type': 'text/plain; charset=utf-8' } });
+  if (!rawToken) return redirect(env, 'invalid');
+  const now = new Date().toISOString();
+  const result = await env.DB.prepare('UPDATE beta_registrations SET unsubscribed_at = ?, unsubscribe_used_at = ? WHERE unsubscribe_token_hash = ? AND unsubscribe_token_expires_at > ? AND unsubscribe_used_at IS NULL').bind(now, now, await hash(rawToken), now).run();
+  return redirect(env, result.meta?.changes ? 'unsubscribed' : 'invalid');
 };
