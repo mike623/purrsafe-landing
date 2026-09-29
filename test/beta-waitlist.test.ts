@@ -119,18 +119,27 @@ describe('safe token transport', () => {
   it('forwards confirmation credentials only in a POST body and redirects cleanly', async () => {
     const fetchMock = vi.fn().mockResolvedValue(supabaseSuccess());
     vi.stubGlobal('fetch', fetchMock);
-    const response = await verifyPost({ request: tokenRequest('secret-token'), env: env() });
+    const response = await verifyPost({ request: tokenRequest('secret-token-1234567890'), env: env() });
     expect(response.status).toBe(303);
     expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=verified');
     expect(fetchMock.mock.calls[0][0]).not.toContain('?token=');
-    expect(JSON.parse(String(fetchMock.mock.calls[0][1].body))).toEqual({ action: 'confirm', token: 'secret-token' });
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1].body))).toEqual({ action: 'confirm', token: 'secret-token-1234567890' });
   });
 
   it('forwards unsubscribe credentials only in a POST body', async () => {
     const fetchMock = vi.fn().mockResolvedValue(supabaseSuccess());
     vi.stubGlobal('fetch', fetchMock);
-    await unsubscribePost({ request: new Request('https://pursafe.example/api/beta-waitlist/unsubscribe', { method: 'POST', body: JSON.stringify({ token: 'secret-token' }), headers: { 'content-type': 'application/json' } }), env: env() });
+    await unsubscribePost({ request: new Request('https://pursafe.example/api/beta-waitlist/unsubscribe', { method: 'POST', body: JSON.stringify({ token: 'secret-token-1234567890' }), headers: { 'content-type': 'application/json' } }), env: env() });
     expect(fetchMock.mock.calls[0][0]).not.toContain('?token=');
-    expect(JSON.parse(String(fetchMock.mock.calls[0][1].body))).toEqual({ action: 'unsubscribe', token: 'secret-token' });
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1].body))).toEqual({ action: 'unsubscribe', token: 'secret-token-1234567890' });
+  });
+
+  it('rejects oversized token credentials before upstream work', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const response = await verifyPost({ request: tokenRequest('x'.repeat(257)), env: env() });
+    expect(response.status).toBe(303);
+    expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=invalid');
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

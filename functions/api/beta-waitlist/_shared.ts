@@ -18,6 +18,9 @@ export interface WaitlistEnv {
   PUBLIC_SITE_URL: string;
 }
 
+export const isUsableToken = (token: unknown): token is string =>
+  typeof token === 'string' && token.length >= 20 && token.length <= 256;
+
 export const redirect = (env: WaitlistEnv, result: 'verified' | 'unsubscribed' | 'invalid'): Response => {
   const url = new URL('/', env.PUBLIC_SITE_URL);
   url.searchParams.set('beta', result);
