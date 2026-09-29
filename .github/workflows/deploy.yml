@@ -1,14 +1,14 @@
-name: Deploy to GitHub Pages
+name: Cloudflare Pages
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -25,24 +25,48 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - name: Install dependencies
+        run: npm ci
+      - name: Check
+        run: npm run check
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Test
+        run: npm test
+      - name: Build
+        env:
+          # Pull requests need a non-production public key to compile the static widget.
+          # The protected deploy job below remains fail-closed on the real environment value.
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY || 'ci-placeholder' }}
+        run: |
+          npm run build
+      - name: Verify static output
+        run: test -f dist/index.html && test -f dist/sitemap-index.xml
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: cloudflare-pages
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
       - name: Install dependencies
         run: npm ci
       - name: Build
-        run: npm run build
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        env:
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}
+        run: |
+          test -n "$PUBLIC_TURNSTILE_SITE_KEY"
+          npm run build
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
-          path: ./dist
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
-    runs-on: ubuntu-latest
-    name: Deploy
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name ${{ vars.CLOUDFLARE_PAGES_PROJECT }}

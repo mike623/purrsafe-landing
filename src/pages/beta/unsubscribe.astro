@@ -1,0 +1,34 @@
+---
+const title = 'Unsubscribe from PurrSafe beta email';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <main>
+      <h1>{title}</h1>
+      <p id="status">Updating…</p>
+    </main>
+    <script>
+      const status = document.querySelector('#status');
+      const token = new URLSearchParams(location.hash.slice(1)).get('token');
+      history.replaceState(null, '', location.pathname);
+      const finish = async () => {
+        if (!token) { if (status) status.textContent = 'Unsubscribe link is invalid or expired.'; return; }
+        const response = await fetch('/api/beta-waitlist/unsubscribe', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (status) status.textContent = result.message ?? 'Unsubscribe link is invalid or expired.';
+      };
+      void finish();
+    </script>
+  </body>
+</html>

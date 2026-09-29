@@ -1,13 +1,15 @@
 ---
-import '../styles/global.css';
+import Layout from '../layouts/Layout.astro';
 ---
+
+<Layout>
 
 <a class="skip" href="#main">Skip to content</a>
 
 <header class="site-header">
   <div class="wrap">
     <a class="brand" href="#top">
-      <img class="brand__mark" src="/purrsafe-landing/assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
+      <img class="brand__mark" src="/assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
       PurrSafe
     </a>
     <nav class="nav" aria-label="Primary">
@@ -48,11 +50,11 @@ import '../styles/global.css';
 
       <div class="hero__stage">
         <div class="device device--front">
-          <img src="/purrsafe-landing/assets/app-memory-feed@2x.png" width="880" height="1912"
+          <img src="/assets/app-memory-feed@2x.png" width="880" height="1912"
                alt="PurrSafe memory feed on iPhone, showing four dated entries for the cat Mochi: a play note, a sneezing note being monitored, a 4.2 kg weight check, and a tuna pâté breakfast.">
         </div>
         <div class="device device--back" aria-hidden="true">
-          <img src="/purrsafe-landing/assets/app-ask-ai@2x.png" width="880" height="1912" alt="">
+          <img src="/assets/app-ask-ai@2x.png" width="880" height="1912" alt="">
         </div>
       </div>
     </div>
@@ -122,7 +124,7 @@ import '../styles/global.css';
           <h3>Capture</h3>
           <p>Pick the pet, pick the type, add a line or a photo. It takes seconds.</p>
           <div class="step__shot">
-            <img src="/purrsafe-landing/assets/app-add-event@2x.png" width="880" height="1912"
+            <img src="/assets/app-add-event@2x.png" width="880" height="1912"
                  alt="The PurrSafe add-memory sheet: a pet selector with Mochi chosen, memory type chips for Food, Health, Weight, Play and Note with Weight selected, a title field, and a body-weight input in kilograms.">
           </div>
         </div>
@@ -131,7 +133,7 @@ import '../styles/global.css';
           <h3>Understand</h3>
           <p>Each entry is typed and tagged, so the log stays structured without extra work.</p>
           <div class="step__shot">
-            <img src="/purrsafe-landing/assets/app-memory-feed@2x.png" width="880" height="1912"
+            <img src="/assets/app-memory-feed@2x.png" width="880" height="1912"
                  alt="The PurrSafe memory feed filtered by pet and by category chips for Food, Health, Vet and Behavior.">
           </div>
         </div>
@@ -140,7 +142,7 @@ import '../styles/global.css';
           <h3>Remember</h3>
           <p>Ask a question later. The assistant answers from that cat&rsquo;s memories only.</p>
           <div class="step__shot">
-            <img src="/purrsafe-landing/assets/app-ask-ai@2x.png" width="880" height="1912"
+            <img src="/assets/app-ask-ai@2x.png" width="880" height="1912"
                  alt="The PurrSafe Ask AI screen, headed “Whose story today?”, listing Mochi with a resumable session and LUNU with a start button.">
           </div>
         </div>
@@ -163,7 +165,7 @@ import '../styles/global.css';
       <div class="proof__grid">
         <div class="proof__stage">
           <div class="device">
-            <img src="/purrsafe-landing/assets/app-ask-ai@2x.png" width="880" height="1912"
+            <img src="/assets/app-ask-ai@2x.png" width="880" height="1912"
                  alt="PurrSafe Ask AI screen showing a resumable session for Mochi, a British Shorthair, with the last question “What did Mochi eat recently?” from 28 minutes ago.">
           </div>
         </div>
@@ -267,11 +269,19 @@ import '../styles/global.css';
         <p class="lead" style="margin-inline:auto">
           Leave your email and we&rsquo;ll send an invite as soon as a slot opens.
         </p>
-        <form class="waitlist" action="#" method="post">
+        <form class="waitlist" action="/api/beta-waitlist" method="post">
           <label for="email">Email address</label>
           <input id="email" name="email" type="email" inputmode="email"
-                 autocomplete="email" required placeholder="you@example.com">
+                 autocomplete="email" required placeholder="you@example.com"
+                 aria-describedby="form-status" aria-invalid="false">
+          <label class="consent">
+            <input name="beta_consent" type="checkbox" value="yes" required>
+            <span>I want to join the PurrSafe private beta and agree to the <a href="/privacy">privacy notice</a>.</span>
+          </label>
+          <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''}></div>
+          <noscript><p class="meta">JavaScript is optional. No-JS submissions use stricter server-side rate limits.</p></noscript>
           <button class="btn btn--primary" type="submit">Get the app</button>
+          <p id="form-status" class="form-status meta" role="status" aria-live="polite"></p>
         </form>
         <p class="meta">No spam. One email when your invite is ready.</p>
       </div>
@@ -284,13 +294,13 @@ import '../styles/global.css';
   <div class="wrap">
     <div class="footer__grid">
       <a class="brand" href="#top">
-        <img class="brand__mark" src="/purrsafe-landing/assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
+        <img class="brand__mark" src="/assets/purrsafe-mark@2x.png" width="144" height="144" alt="">
         PurrSafe
       </a>
       <nav class="footer__links" aria-label="Footer">
-        <a href="#">Privacy</a>
-        <a href="#">Terms</a>
-        <a href="#">Contact</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/contact">Contact</a>
         <a href="#faq">FAQ</a>
       </nav>
     </div>
@@ -300,3 +310,42 @@ import '../styles/global.css';
     </p>
   </div>
 </footer>
+
+<section id="privacy" class="privacy-note" aria-labelledby="privacy-heading">
+  <div class="wrap">
+    <h2 id="privacy-heading">Beta privacy notice</h2>
+    <p>We use your email to manage the private beta invitation. Beta consent is required. We do not sell your email. You can unsubscribe from invitation emails at any time.</p>
+  </div>
+</section>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script>
+  const form = document.querySelector('.waitlist');
+  const status = form?.querySelector('.form-status');
+  const betaResult = new URLSearchParams(location.search).get('beta');
+  if (status && betaResult) {
+    status.textContent = ({ registered: 'Thanks — check your email for your beta confirmation.', error: 'Unable to join right now. Please try again.' } as Record<string, string>)[betaResult] ?? '';
+    history.replaceState(null, '', `${location.pathname}${location.hash}`);
+  }
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!(form instanceof HTMLFormElement) || !(status instanceof HTMLElement)) return;
+    const email = form.querySelector('#email');
+    status.setAttribute('role', 'status');
+    status.textContent = 'Submitting…';
+    if (email instanceof HTMLInputElement) email.setAttribute('aria-invalid', 'false');
+    try {
+      const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+      const result = await response.json().catch(() => ({ message: 'Unable to submit right now.' }));
+      status.textContent = result.message ?? (response.ok ? 'Check your email for your beta confirmation.' : 'Unable to submit right now.');
+      if (!response.ok) {
+        status.setAttribute('role', 'alert');
+        if (email instanceof HTMLInputElement) email.setAttribute('aria-invalid', 'true');
+      } else form.reset();
+    } catch {
+      status.setAttribute('role', 'alert');
+      status.textContent = 'Unable to submit right now. Try again.';
+    }
+  });
+</script>
+</Layout>
