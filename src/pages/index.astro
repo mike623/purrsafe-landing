@@ -278,11 +278,8 @@ import Layout from '../layouts/Layout.astro';
             <input name="beta_consent" type="checkbox" value="yes" required>
             <span>I want to join the PurrSafe private beta and agree to the <a href="/privacy">privacy notice</a>.</span>
           </label>
-          <label class="consent">
-            <input name="research_opt_in" type="checkbox" value="yes">
-            <span>Optional: contact me about beta research and feedback.</span>
-          </label>
           <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''}></div>
+          <noscript><p class="meta">JavaScript is required to complete beta verification.</p></noscript>
           <button class="btn btn--primary" type="submit">Get the app</button>
           <p id="form-status" class="form-status meta" role="status" aria-live="polite"></p>
         </form>
@@ -325,6 +322,11 @@ import Layout from '../layouts/Layout.astro';
 <script>
   const form = document.querySelector('.waitlist');
   const status = form?.querySelector('.form-status');
+  const betaResult = new URLSearchParams(location.search).get('beta');
+  if (status && betaResult) {
+    status.textContent = ({ registered: 'Thanks — check your email for your beta confirmation.', error: 'Unable to join right now. Please try again.' } as Record<string, string>)[betaResult] ?? '';
+    history.replaceState(null, '', `${location.pathname}${location.hash}`);
+  }
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!(form instanceof HTMLFormElement) || !(status instanceof HTMLElement)) return;

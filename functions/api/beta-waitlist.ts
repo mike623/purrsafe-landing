@@ -41,7 +41,10 @@ const browserRedirect = (env: Env, result: 'registered' | 'error') => {
   });
 };
 
-const wantsHtml = (request: Request) => !(request.headers.get('Accept') ?? '').includes('application/json');
+const wantsHtml = (request: Request) => {
+  const accept = request.headers.get('Accept') ?? '';
+  return accept.includes('text/html') && !accept.includes('application/json');
+};
 
 const originFor = (request: Request, env: Env) => {
   const origin = request.headers.get('Origin');
@@ -86,13 +89,18 @@ export const onRequestPost = async ({ request, env }: Context) => {
   const form = await request.formData();
   const email = String(form.get('email') ?? '').trim().toLowerCase();
   const betaConsent = form.get('beta_consent') === 'yes';
-  const researchOptIn = form.get('research_opt_in') === 'yes';
   const turnstileToken = String(form.get('cf-turnstile-response') ?? '');
   if (!/^\S+@\S+\.\S+$/.test(email) || !betaConsent || !turnstileToken) {
     return wantsHtml(request)
       ? browserRedirect(env, 'error')
       : json({ message: 'Enter a valid email, accept beta consent, and complete verification.' }, 400, origin);
   }
+
+  const verification = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: turnstileToken, remoteip: request.headers.get('CF-Connecting-IP') ?? '' }) });
+  const verificationResult = await verification.json() as { success?: boolean; hostname?: string; action?: string };
+  if (!verificationResult.success || verificationResult.hostname !== env.TURNSTILE_HOSTNAME || verificationResult.action !== env.TURNSTILE_ACTION) return wantsHtml(request)
+    ? browserRedirect(env, 'error')
+    : json({ message: 'Verification failed. Try again.' }, 400, origin);
 
   try {
     const platformLimit = await env.RATE_LIMITER.limit({ key: GLOBAL_RATE_LIMIT_KEY });
@@ -108,13 +116,7 @@ export const onRequestPost = async ({ request, env }: Context) => {
     throw error;
   }
 
-  const verification = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: turnstileToken, remoteip: request.headers.get('CF-Connecting-IP') ?? '' }) });
-  const verificationResult = await verification.json() as { success?: boolean; hostname?: string; action?: string };
-  if (!verificationResult.success || verificationResult.hostname !== env.TURNSTILE_HOSTNAME || verificationResult.action !== env.TURNSTILE_ACTION) return wantsHtml(request)
-    ? browserRedirect(env, 'error')
-    : json({ message: 'Verification failed. Try again.' }, 400, origin);
-
-  const upstream = await callSupabase(env, { action: 'signup', email, cat_count: '1', tracking_method: 'other', consent: betaConsent, source: 'organic', research_opt_in: researchOptIn });
+  const upstream = await callSupabase(env, { action: 'signup', email, cat_count: '1', tracking_method: 'other', consent: betaConsent, source: 'organic' });
   const result = await upstream.json().catch(() => ({})) as Record<string, unknown>;
   if (!upstream.ok) return wantsHtml(request)
     ? browserRedirect(env, 'error')

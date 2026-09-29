@@ -25,7 +25,8 @@ const title = 'Confirm your PurrSafe beta signup';
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ token }),
         });
-        if (status) status.textContent = response.ok ? 'Signup confirmed.' : 'Confirmation link is invalid or expired.';
+        const result = await response.json().catch(() => ({}));
+        if (status) status.textContent = result.message ?? 'Confirmation link is invalid or expired.';
       };
       void finish();
     </script>

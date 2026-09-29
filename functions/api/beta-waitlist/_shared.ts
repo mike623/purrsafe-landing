@@ -18,18 +18,14 @@ export interface WaitlistEnv {
   PUBLIC_SITE_URL: string;
 }
 
+export const json = (body: unknown, status = 200): Response => new Response(JSON.stringify(body), {
+  status,
+  headers: {
+    'content-type': 'application/json; charset=utf-8',
+    'cache-control': 'no-store',
+    'referrer-policy': 'no-referrer',
+  },
+});
+
 export const isUsableToken = (token: unknown): token is string =>
   typeof token === 'string' && token.length >= 20 && token.length <= 256;
-
-export const redirect = (env: WaitlistEnv, result: 'verified' | 'unsubscribed' | 'invalid'): Response => {
-  const url = new URL('/', env.PUBLIC_SITE_URL);
-  url.searchParams.set('beta', result);
-  return new Response(null, {
-    status: 303,
-    headers: {
-      location: url.toString(),
-      'cache-control': 'no-store',
-      'referrer-policy': 'no-referrer',
-    },
-  });
-};

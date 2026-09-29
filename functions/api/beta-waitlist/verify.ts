@@ -1,8 +1,10 @@
-import { isUsableToken, redirect, type WaitlistEnv } from '../beta-waitlist/_shared.js';
+import { isUsableToken, json, type WaitlistEnv } from '../beta-waitlist/_shared.js';
 export const onRequestGet = ({ request: _request }: { request: Request; env: WaitlistEnv }) => new Response('POST required', { status: 405, headers: { allow: 'POST', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
 export const onRequestPost = async ({ request, env }: { request: Request; env: WaitlistEnv }) => {
   const body = await request.json().catch(() => ({})) as { token?: unknown };
-  if (!isUsableToken(body.token)) return redirect(env, 'invalid');
+  if (!isUsableToken(body.token)) return json({ message: 'Confirmation link is invalid or expired.' }, 400);
   const response = await fetch(`${env.SUPABASE_URL.replace(/\/$/, '')}/functions/v1/beta-waitlist`, { method: 'POST', headers: { apikey: env.SUPABASE_ANON_KEY, authorization: `Bearer ${env.SUPABASE_ANON_KEY}`, 'content-type': 'application/json' }, body: JSON.stringify({ action: 'confirm', token: body.token }) });
-  return redirect(env, response.ok ? 'verified' : 'invalid');
+  const result = await response.json().catch(() => ({})) as Record<string, unknown>;
+  if (!response.ok) return json({ message: result.error ?? 'Confirmation link is invalid or expired.' }, response.status >= 500 ? 502 : 400);
+  return json({ message: 'Signup confirmed.' });
 };

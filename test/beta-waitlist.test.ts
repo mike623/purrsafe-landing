@@ -61,21 +61,21 @@ afterEach(() => vi.restoreAllMocks());
 describe('beta waitlist abuse boundary', () => {
   it('enforces the Cloudflare platform limiter before any upstream work', async () => {
     const platformEnv = env(database(), false);
-    vi.stubGlobal('fetch', vi.fn());
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(turnstileSuccess()));
     const response = await onRequestPost({ request: request(), env: platformEnv as never });
     expect(response.status).toBe(429);
     expect(platformEnv.RATE_LIMITER.limit).toHaveBeenCalledWith({ key: 'beta-waitlist:global' });
-    expect(fetch).not.toHaveBeenCalled();
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it('applies a shared global quota before per-IP quota', async () => {
     const db = database(100);
     const platformEnv = env(db);
-    vi.stubGlobal('fetch', vi.fn());
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(turnstileSuccess()));
     const response = await onRequestPost({ request: request('198.51.100.1'), env: platformEnv as never });
     expect(response.status).toBe(429);
     expect(db.queries.filter((query) => query.includes('beta_registration_rate_limits'))).toHaveLength(2);
-    expect(fetch).not.toHaveBeenCalled();
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it('prunes old limiter rows and delegates registration to Supabase', async () => {
@@ -97,12 +97,12 @@ describe('beta waitlist abuse boundary', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it('redirects a no-JS browser form submission instead of returning a JSON document', async () => {
-    const fetchMock = vi.fn().mockImplementation((url: string) => url.includes('siteverify') ? turnstileSuccess() : supabaseSuccess());
+  it('rejects a no-JS browser form submission without a Turnstile token', async () => {
+    const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    const response = await onRequestPost({ request: new Request(request().url, { method: 'POST', headers: { Origin: 'https://pursafe.example', 'CF-Connecting-IP': '203.0.113.10' }, body: (() => { const form = new FormData(); form.set('email', 'cat@example.com'); form.set('beta_consent', 'yes'); form.set('cf-turnstile-response', 'token'); return form; })() }), env: env() as never });
-    expect(response.status).toBe(303);
-    expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=registered');
+    const response = await onRequestPost({ request: new Request(request().url, { method: 'POST', headers: { Origin: 'https://pursafe.example', 'CF-Connecting-IP': '203.0.113.10' }, body: (() => { const form = new FormData(); form.set('email', 'cat@example.com'); form.set('beta_consent', 'yes'); return form; })() }), env: env() as never });
+    expect(response.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 
@@ -116,14 +116,22 @@ describe('safe token transport', () => {
     expect(verify.headers.get('referrer-policy')).toBe('no-referrer');
   });
 
-  it('forwards confirmation credentials only in a POST body and redirects cleanly', async () => {
+  it('forwards confirmation credentials only in a POST body and returns JSON', async () => {
     const fetchMock = vi.fn().mockResolvedValue(supabaseSuccess());
     vi.stubGlobal('fetch', fetchMock);
     const response = await verifyPost({ request: tokenRequest('secret-token-1234567890'), env: env() });
-    expect(response.status).toBe(303);
-    expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=verified');
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ message: 'Signup confirmed.' });
     expect(fetchMock.mock.calls[0][0]).not.toContain('?token=');
     expect(JSON.parse(String(fetchMock.mock.calls[0][1].body))).toEqual({ action: 'confirm', token: 'secret-token-1234567890' });
+  });
+
+  it('surfaces an upstream confirmation failure without claiming success', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: 'Confirmation link is invalid or expired' }), { status: 404 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const response = await verifyPost({ request: tokenRequest('secret-token-1234567890'), env: env() });
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ message: 'Confirmation link is invalid or expired' });
   });
 
   it('forwards unsubscribe credentials only in a POST body', async () => {
@@ -138,8 +146,8 @@ describe('safe token transport', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
     const response = await verifyPost({ request: tokenRequest('x'.repeat(257)), env: env() });
-    expect(response.status).toBe(303);
-    expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=invalid');
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ message: 'Confirmation link is invalid or expired.' });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

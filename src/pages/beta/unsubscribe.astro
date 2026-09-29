@@ -25,7 +25,8 @@ const title = 'Unsubscribe from PurrSafe beta email';
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ token }),
         });
-        if (status) status.textContent = response.ok ? 'You are unsubscribed.' : 'Unsubscribe link is invalid or expired.';
+        const result = await response.json().catch(() => ({}));
+        if (status) status.textContent = result.message ?? 'Unsubscribe link is invalid or expired.';
       };
       void finish();
     </script>
