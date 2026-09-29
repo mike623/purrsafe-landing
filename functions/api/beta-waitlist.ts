@@ -32,6 +32,17 @@ const json = (body: Record<string, unknown>, status = 200, origin?: string) =>
     },
   });
 
+const browserRedirect = (env: Env, result: 'registered' | 'error') => {
+  const url = new URL('/', env.PUBLIC_SITE_URL);
+  url.searchParams.set('beta', result);
+  return new Response(null, {
+    status: 303,
+    headers: { location: url.toString(), 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' },
+  });
+};
+
+const wantsHtml = (request: Request) => !(request.headers.get('Accept') ?? '').includes('application/json');
+
 const originFor = (request: Request, env: Env) => {
   const origin = request.headers.get('Origin');
   const allowed = (env.ALLOWED_ORIGINS ?? env.PUBLIC_SITE_URL).split(',').map((value) => value.trim());
@@ -77,7 +88,11 @@ export const onRequestPost = async ({ request, env }: Context) => {
   const betaConsent = form.get('beta_consent') === 'yes';
   const researchOptIn = form.get('research_opt_in') === 'yes';
   const turnstileToken = String(form.get('cf-turnstile-response') ?? '');
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !betaConsent || !turnstileToken) return json({ message: 'Enter a valid email, accept beta consent, and complete verification.' }, 400, origin);
+  if (!/^\S+@\S+\.\S+$/.test(email) || !betaConsent || !turnstileToken) {
+    return wantsHtml(request)
+      ? browserRedirect(env, 'error')
+      : json({ message: 'Enter a valid email, accept beta consent, and complete verification.' }, 400, origin);
+  }
 
   try {
     const platformLimit = await env.RATE_LIMITER.limit({ key: GLOBAL_RATE_LIMIT_KEY });
@@ -87,16 +102,24 @@ export const onRequestPost = async ({ request, env }: Context) => {
     await assertRateLimit(env.DB, GLOBAL_RATE_LIMIT_KEY, GLOBAL_RATE_LIMIT_MAX_REQUESTS);
     await assertRateLimit(env.DB, `client:${clientKey(request)}`, RATE_LIMIT_MAX_REQUESTS);
   } catch (error) {
-    if (error instanceof Error && error.message === 'rate_limited') return json({ message: 'Too many attempts. Try again later.' }, 429, origin);
+    if (error instanceof Error && error.message === 'rate_limited') return wantsHtml(request)
+      ? browserRedirect(env, 'error')
+      : json({ message: 'Too many attempts. Try again later.' }, 429, origin);
     throw error;
   }
 
   const verification = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: turnstileToken, remoteip: request.headers.get('CF-Connecting-IP') ?? '' }) });
   const verificationResult = await verification.json() as { success?: boolean; hostname?: string; action?: string };
-  if (!verificationResult.success || verificationResult.hostname !== env.TURNSTILE_HOSTNAME || verificationResult.action !== env.TURNSTILE_ACTION) return json({ message: 'Verification failed. Try again.' }, 400, origin);
+  if (!verificationResult.success || verificationResult.hostname !== env.TURNSTILE_HOSTNAME || verificationResult.action !== env.TURNSTILE_ACTION) return wantsHtml(request)
+    ? browserRedirect(env, 'error')
+    : json({ message: 'Verification failed. Try again.' }, 400, origin);
 
   const upstream = await callSupabase(env, { action: 'signup', email, cat_count: '1', tracking_method: 'other', consent: betaConsent, source: 'organic', research_opt_in: researchOptIn });
   const result = await upstream.json().catch(() => ({})) as Record<string, unknown>;
-  if (!upstream.ok) return json({ message: result.error ?? 'Unable to save signup right now.' }, 502, origin);
-  return json({ message: result.duplicate ? 'You are already on the beta list.' : 'Check your email for your beta confirmation.' }, 202, origin);
+  if (!upstream.ok) return wantsHtml(request)
+    ? browserRedirect(env, 'error')
+    : json({ message: result.error ?? 'Unable to save signup right now.' }, 502, origin);
+  return wantsHtml(request)
+    ? browserRedirect(env, 'registered')
+    : json({ message: result.duplicate ? 'You are already on the beta list.' : 'Check your email for your beta confirmation.' }, 202, origin);
 };

@@ -1,6 +1,8 @@
 ---
-import '../styles/global.css';
+import Layout from '../layouts/Layout.astro';
 ---
+
+<Layout>
 
 <a class="skip" href="#main">Skip to content</a>
 
@@ -270,10 +272,11 @@ import '../styles/global.css';
         <form class="waitlist" action="/api/beta-waitlist" method="post">
           <label for="email">Email address</label>
           <input id="email" name="email" type="email" inputmode="email"
-                 autocomplete="email" required placeholder="you@example.com">
+                 autocomplete="email" required placeholder="you@example.com"
+                 aria-describedby="form-status" aria-invalid="false">
           <label class="consent">
             <input name="beta_consent" type="checkbox" value="yes" required>
-            <span>I want to join the PurrSafe private beta and agree to the <a href="#privacy">privacy notice</a>.</span>
+            <span>I want to join the PurrSafe private beta and agree to the <a href="/privacy">privacy notice</a>.</span>
           </label>
           <label class="consent">
             <input name="research_opt_in" type="checkbox" value="yes">
@@ -281,7 +284,7 @@ import '../styles/global.css';
           </label>
           <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''}></div>
           <button class="btn btn--primary" type="submit">Get the app</button>
-          <p class="form-status meta" role="status" aria-live="polite"></p>
+          <p id="form-status" class="form-status meta" role="status" aria-live="polite"></p>
         </form>
         <p class="meta">No spam. One email when your invite is ready.</p>
       </div>
@@ -298,9 +301,9 @@ import '../styles/global.css';
         PurrSafe
       </a>
       <nav class="footer__links" aria-label="Footer">
-        <a href="#privacy">Privacy</a>
-        <a href="#">Terms</a>
-        <a href="#">Contact</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/contact">Contact</a>
         <a href="#faq">FAQ</a>
       </nav>
     </div>
@@ -325,10 +328,22 @@ import '../styles/global.css';
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!(form instanceof HTMLFormElement) || !(status instanceof HTMLElement)) return;
+    const email = form.querySelector('#email');
+    status.setAttribute('role', 'status');
     status.textContent = 'Submitting…';
-    const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
-    const result = await response.json().catch(() => ({ message: 'Unable to submit right now.' }));
-    status.textContent = result.message ?? (response.ok ? 'Check your email to verify your beta registration.' : 'Unable to submit right now.');
-    if (response.ok) form.reset();
+    if (email instanceof HTMLInputElement) email.setAttribute('aria-invalid', 'false');
+    try {
+      const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+      const result = await response.json().catch(() => ({ message: 'Unable to submit right now.' }));
+      status.textContent = result.message ?? (response.ok ? 'Check your email for your beta confirmation.' : 'Unable to submit right now.');
+      if (!response.ok) {
+        status.setAttribute('role', 'alert');
+        if (email instanceof HTMLInputElement) email.setAttribute('aria-invalid', 'true');
+      } else form.reset();
+    } catch {
+      status.setAttribute('role', 'alert');
+      status.textContent = 'Unable to submit right now. Try again.';
+    }
   });
 </script>
+</Layout>

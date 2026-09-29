@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { onRequestPost } from '../functions/api/beta-waitlist';
-import { onRequestGet as verifyGet, onRequestPost as verifyPost } from '../functions/api/beta-waitlist/verify';
-import { onRequestGet as unsubscribeGet, onRequestPost as unsubscribePost } from '../functions/api/beta-waitlist/unsubscribe';
+import { onRequestPost } from '../functions/api/beta-waitlist.js';
+import { onRequestGet as verifyGet, onRequestPost as verifyPost } from '../functions/api/beta-waitlist/verify.js';
+import { onRequestGet as unsubscribeGet, onRequestPost as unsubscribePost } from '../functions/api/beta-waitlist/unsubscribe.js';
 import { type D1Database, type D1Statement, type WaitlistEnv } from '../functions/api/beta-waitlist/_shared.js';
 
 type TestEnv = WaitlistEnv & {
@@ -51,7 +51,7 @@ function request(ip = '203.0.113.10') {
   form.set('beta_consent', 'yes');
   form.set('research_opt_in', 'no');
   form.set('cf-turnstile-response', 'turnstile-token');
-  return new Request('https://pursafe.example/api/beta-waitlist', { method: 'POST', headers: { Origin: 'https://pursafe.example', 'CF-Connecting-IP': ip }, body: form });
+  return new Request('https://pursafe.example/api/beta-waitlist', { method: 'POST', headers: { Accept: 'application/json', Origin: 'https://pursafe.example', 'CF-Connecting-IP': ip }, body: form });
 }
 
 const tokenRequest = (token: string) => new Request('https://pursafe.example/api/beta-waitlist/verify', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token }) });
@@ -96,13 +96,21 @@ describe('beta waitlist abuse boundary', () => {
     expect(response.status).toBe(400);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
+
+  it('redirects a no-JS browser form submission instead of returning a JSON document', async () => {
+    const fetchMock = vi.fn().mockImplementation((url: string) => url.includes('siteverify') ? turnstileSuccess() : supabaseSuccess());
+    vi.stubGlobal('fetch', fetchMock);
+    const response = await onRequestPost({ request: new Request(request().url, { method: 'POST', headers: { Origin: 'https://pursafe.example', 'CF-Connecting-IP': '203.0.113.10' }, body: (() => { const form = new FormData(); form.set('email', 'cat@example.com'); form.set('beta_consent', 'yes'); form.set('cf-turnstile-response', 'token'); return form; })() }), env: env() as never });
+    expect(response.status).toBe(303);
+    expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=registered');
+  });
 });
 
 describe('safe token transport', () => {
   it('does not accept bearer tokens in GET query strings', async () => {
     const testEnv = env();
-    const verify = await verifyGet({ request: new Request('https://pursafe.example/api/beta-waitlist/verify?token=secret'), env: testEnv });
-    const unsubscribe = await unsubscribeGet({ request: new Request('https://pursafe.example/api/beta-waitlist/unsubscribe?token=secret'), env: testEnv });
+    const verify = verifyGet({ request: new Request('https://pursafe.example/api/beta-waitlist/verify?token=secret'), env: testEnv });
+    const unsubscribe = unsubscribeGet({ request: new Request('https://pursafe.example/api/beta-waitlist/unsubscribe?token=secret'), env: testEnv });
     expect(verify.status).toBe(405);
     expect(unsubscribe.status).toBe(405);
     expect(verify.headers.get('referrer-policy')).toBe('no-referrer');

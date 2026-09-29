@@ -1,5 +1,5 @@
 import { redirect, type WaitlistEnv } from '../beta-waitlist/_shared.js';
-export const onRequestGet = ({ env }: { request: Request; env: WaitlistEnv }) => new Response('POST required', { status: 405, headers: { allow: 'POST', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
+export const onRequestGet = ({ request: _request }: { request: Request; env: WaitlistEnv }) => new Response('POST required', { status: 405, headers: { allow: 'POST', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
 export const onRequestPost = async ({ request, env }: { request: Request; env: WaitlistEnv }) => {
   const body = await request.json().catch(() => ({})) as { token?: unknown };
   if (typeof body.token !== 'string') return redirect(env, 'invalid');

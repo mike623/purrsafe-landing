@@ -1,0 +1,12 @@
+name = "purrsafe-landing"
+compatibility_date = "2026-09-29"
+pages_build_output_dir = "./dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "purrsafe-beta"
+database_id = "RELEASEOPS_SET_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[vars]
+PUBLIC_SITE_URL = "https://pursafe.selenasolutions.com"
