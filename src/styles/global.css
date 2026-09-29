@@ -201,6 +201,7 @@ section { padding-block: var(--ps-section-y); }
   box-shadow: var(--ps-shadow-sm);
 }
 .nav { margin-left: auto; display: flex; align-items: center; gap: var(--ps-2); }
+.nav-toggle { display: none; }
 .nav a {
   display: inline-flex; align-items: center; min-height: 44px;
   padding-inline: var(--ps-3);
@@ -385,7 +386,7 @@ section { padding-block: var(--ps-section-y); }
   display: flex; gap: var(--ps-3); flex-wrap: wrap;
   justify-content: center; margin-inline: auto; max-width: 520px;
 }
-.waitlist label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.waitlist label { display: block; flex-basis: 100%; text-align: left; font: var(--ps-small); font-weight: 700; }
 .waitlist input {
   flex: 1 1 260px; min-height: var(--ps-tap-min);
   padding: 0 var(--ps-4); font: var(--ps-body); color: var(--ps-ink);
@@ -408,6 +409,12 @@ section { padding-block: var(--ps-section-y); }
 .waitlist__msg--success { color: var(--ps-teal); }
 /* pending: the button keeps its box so the row does not reflow mid-submit */
 .btn[data-pending="true"] { pointer-events: none; opacity: 0.72; }
+section[id] { scroll-margin-top: 88px; }
+
+.legal-page { min-height: 100vh; padding-block: var(--ps-8); }
+.legal-page__brand { margin-bottom: var(--ps-8); }
+.legal-page article { max-width: 70ch; }
+.legal-page article > * + * { margin-top: var(--ps-5); }
 
 /* ---- Footer ---------------------------------------------------------- */
 .site-footer { background: var(--ps-canvas-deep); padding-block: var(--ps-8) var(--ps-6); }
@@ -430,7 +437,10 @@ section { padding-block: var(--ps-section-y); }
   .proof__grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 820px) {
-  .nav a:not(.btn) { display: none; }         /* ship as a disclosure menu */
+  .nav-toggle { display: inline-flex; align-items: center; min-height: 48px; padding-inline: var(--ps-3); margin-left: auto; border: 2px solid var(--ps-border); border-radius: var(--ps-r-sm); background: var(--ps-surface); color: var(--ps-teal); font: 700 0.9375rem/1 var(--ps-font); }
+  .nav { display: none; position: absolute; top: 72px; right: var(--ps-4); flex-direction: column; align-items: stretch; padding: var(--ps-2); background: var(--ps-surface); border: 2px solid var(--ps-border); border-radius: var(--ps-r-card); box-shadow: var(--ps-shadow-lg); }
+  .nav.nav--open { display: flex; }
+  .nav a { min-height: 48px; }
   .problem__grid, .trust__grid { grid-template-columns: 1fr; }
   .steps { grid-template-columns: 1fr; gap: var(--ps-8); }
 }
