@@ -1,0 +1,33 @@
+---
+const title = 'Confirm your PurrSafe beta signup';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <main>
+      <h1>{title}</h1>
+      <p id="status">Confirming…</p>
+    </main>
+    <script>
+      const status = document.querySelector('#status');
+      const token = new URLSearchParams(location.hash.slice(1)).get('confirm');
+      history.replaceState(null, '', location.pathname);
+      const finish = async () => {
+        if (!token) { if (status) status.textContent = 'Confirmation link is invalid or expired.'; return; }
+        const response = await fetch('/api/beta-waitlist/verify', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        if (status) status.textContent = response.ok ? 'Signup confirmed.' : 'Confirmation link is invalid or expired.';
+      };
+      void finish();
+    </script>
+  </body>
+</html>

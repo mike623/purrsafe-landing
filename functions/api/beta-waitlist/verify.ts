@@ -1,9 +1,8 @@
-import { hash, redirect, type WaitlistEnv } from '../beta-waitlist/_shared.js';
-export const onRequestGet = async ({ request, env }: { request: Request; env: WaitlistEnv }) => {
-  const url = new URL(request.url);
-  const rawToken = url.searchParams.get('token');
-  if (!rawToken) return redirect(env, 'invalid');
-  const now = new Date().toISOString();
-  const result = await env.DB.prepare('UPDATE beta_registrations SET verified_at = ?, token_used_at = ? WHERE verification_token_hash = ? AND token_expires_at > ? AND token_used_at IS NULL').bind(now, now, await hash(rawToken), now).run();
-  return redirect(env, result.meta?.changes ? 'verified' : 'invalid');
+import { redirect, type WaitlistEnv } from '../beta-waitlist/_shared.js';
+export const onRequestGet = ({ env }: { request: Request; env: WaitlistEnv }) => new Response('POST required', { status: 405, headers: { allow: 'POST', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
+export const onRequestPost = async ({ request, env }: { request: Request; env: WaitlistEnv }) => {
+  const body = await request.json().catch(() => ({})) as { token?: unknown };
+  if (typeof body.token !== 'string') return redirect(env, 'invalid');
+  const response = await fetch(`${env.SUPABASE_URL.replace(/\/$/, '')}/functions/v1/beta-waitlist`, { method: 'POST', headers: { apikey: env.SUPABASE_ANON_KEY, authorization: `Bearer ${env.SUPABASE_ANON_KEY}`, 'content-type': 'application/json' }, body: JSON.stringify({ action: 'confirm', token: body.token }) });
+  return redirect(env, response.ok ? 'verified' : 'invalid');
 };

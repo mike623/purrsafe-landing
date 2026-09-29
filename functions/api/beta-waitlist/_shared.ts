@@ -13,16 +13,10 @@ export interface D1Database {
 }
 
 export interface WaitlistEnv {
-  DB: D1Database;
+  SUPABASE_URL: string;
+  SUPABASE_ANON_KEY: string;
   PUBLIC_SITE_URL: string;
 }
-
-export const hash = async (value: string): Promise<string> => {
-  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
-  return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
-};
-
-export const createToken = (): string => `${crypto.randomUUID()}-${crypto.randomUUID()}`;
 
 export const redirect = (env: WaitlistEnv, result: 'verified' | 'unsubscribed' | 'invalid'): Response => {
   const url = new URL('/', env.PUBLIC_SITE_URL);
@@ -32,6 +26,7 @@ export const redirect = (env: WaitlistEnv, result: 'verified' | 'unsubscribed' |
     headers: {
       location: url.toString(),
       'cache-control': 'no-store',
+      'referrer-policy': 'no-referrer',
     },
   });
 };
