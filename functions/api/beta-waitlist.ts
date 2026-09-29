@@ -90,17 +90,20 @@ export const onRequestPost = async ({ request, env }: Context) => {
   const email = String(form.get('email') ?? '').trim().toLowerCase();
   const betaConsent = form.get('beta_consent') === 'yes';
   const turnstileToken = String(form.get('cf-turnstile-response') ?? '');
-  if (!/^\S+@\S+\.\S+$/.test(email) || !betaConsent || !turnstileToken) {
-    return wantsHtml(request)
+  const htmlFallback = wantsHtml(request);
+  if (!/^\S+@\S+\.\S+$/.test(email) || !betaConsent || (!turnstileToken && !htmlFallback)) {
+    return htmlFallback
       ? browserRedirect(env, 'error')
       : json({ message: 'Enter a valid email, accept beta consent, and complete verification.' }, 400, origin);
   }
 
-  const verification = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: turnstileToken, remoteip: request.headers.get('CF-Connecting-IP') ?? '' }) });
-  const verificationResult = await verification.json() as { success?: boolean; hostname?: string; action?: string };
-  if (!verificationResult.success || verificationResult.hostname !== env.TURNSTILE_HOSTNAME || verificationResult.action !== env.TURNSTILE_ACTION) return wantsHtml(request)
-    ? browserRedirect(env, 'error')
-    : json({ message: 'Verification failed. Try again.' }, 400, origin);
+  if (turnstileToken) {
+    const verification = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: turnstileToken, remoteip: request.headers.get('CF-Connecting-IP') ?? '' }) });
+    const verificationResult = await verification.json() as { success?: boolean; hostname?: string; action?: string };
+    if (!verificationResult.success || verificationResult.hostname !== env.TURNSTILE_HOSTNAME || verificationResult.action !== env.TURNSTILE_ACTION) return htmlFallback
+      ? browserRedirect(env, 'error')
+      : json({ message: 'Verification failed. Try again.' }, 400, origin);
+  }
 
   try {
     const platformLimit = await env.RATE_LIMITER.limit({ key: GLOBAL_RATE_LIMIT_KEY });

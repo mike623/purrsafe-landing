@@ -279,7 +279,7 @@ import Layout from '../layouts/Layout.astro';
             <span>I want to join the PurrSafe private beta and agree to the <a href="/privacy">privacy notice</a>.</span>
           </label>
           <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''}></div>
-          <noscript><p class="meta">JavaScript is required to complete beta verification.</p></noscript>
+          <noscript><p class="meta">JavaScript is optional. No-JS submissions use stricter server-side rate limits.</p></noscript>
           <button class="btn btn--primary" type="submit">Get the app</button>
           <p id="form-status" class="form-status meta" role="status" aria-live="polite"></p>
         </form>
@@ -314,7 +314,7 @@ import Layout from '../layouts/Layout.astro';
 <section id="privacy" class="privacy-note" aria-labelledby="privacy-heading">
   <div class="wrap">
     <h2 id="privacy-heading">Beta privacy notice</h2>
-    <p>We use your email to manage the private beta invitation. Beta consent is required; research contact is optional. We do not sell your email. You can unsubscribe from invitation emails at any time.</p>
+    <p>We use your email to manage the private beta invitation. Beta consent is required. We do not sell your email. You can unsubscribe from invitation emails at any time.</p>
   </div>
 </section>
 

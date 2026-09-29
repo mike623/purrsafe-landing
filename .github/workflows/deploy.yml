@@ -36,7 +36,9 @@ jobs:
       - name: Build
         env:
           PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}
-        run: npm run build
+        run: |
+          test -n "$PUBLIC_TURNSTILE_SITE_KEY"
+          npm run build
       - name: Verify static output
         run: test -f dist/index.html && test -f dist/sitemap-index.xml
 
@@ -58,7 +60,9 @@ jobs:
       - name: Build
         env:
           PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}
-        run: npm run build
+        run: |
+          test -n "$PUBLIC_TURNSTILE_SITE_KEY"
+          npm run build
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:

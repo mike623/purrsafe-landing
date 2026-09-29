@@ -97,12 +97,13 @@ describe('beta waitlist abuse boundary', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it('rejects a no-JS browser form submission without a Turnstile token', async () => {
-    const fetchMock = vi.fn();
+  it('accepts a no-JS browser form submission through the server-side quota', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(supabaseSuccess());
     vi.stubGlobal('fetch', fetchMock);
-    const response = await onRequestPost({ request: new Request(request().url, { method: 'POST', headers: { Origin: 'https://pursafe.example', 'CF-Connecting-IP': '203.0.113.10' }, body: (() => { const form = new FormData(); form.set('email', 'cat@example.com'); form.set('beta_consent', 'yes'); return form; })() }), env: env() as never });
-    expect(response.status).toBe(400);
-    expect(fetchMock).not.toHaveBeenCalled();
+    const response = await onRequestPost({ request: new Request(request().url, { method: 'POST', headers: { Accept: 'text/html', Origin: 'https://pursafe.example', 'CF-Connecting-IP': '203.0.113.10' }, body: (() => { const form = new FormData(); form.set('email', 'cat@example.com'); form.set('beta_consent', 'yes'); return form; })() }), env: env() as never });
+    expect(response.status).toBe(303);
+    expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=registered');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 
