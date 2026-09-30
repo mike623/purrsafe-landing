@@ -91,7 +91,7 @@ export const onRequestPost = async ({ request, env }: Context) => {
   const betaConsent = form.get('beta_consent') === 'yes';
   const turnstileToken = String(form.get('cf-turnstile-response') ?? '');
   const htmlFallback = wantsHtml(request);
-  if (!/^\S+@\S+\.\S+$/.test(email) || !betaConsent || (!turnstileToken && !htmlFallback)) {
+  if (!/^\S+@\S+\.\S+$/.test(email) || !betaConsent || !turnstileToken) {
     return htmlFallback
       ? browserRedirect(env, 'error')
       : json({ message: 'Enter a valid email, accept beta consent, and complete verification.' }, 400, origin);
