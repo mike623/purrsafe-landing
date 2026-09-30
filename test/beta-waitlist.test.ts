@@ -97,13 +97,25 @@ describe('beta waitlist abuse boundary', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it('accepts a no-JS browser form submission through the server-side quota', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(supabaseSuccess());
+  it.each(['text/html', 'application/json'])('rejects missing Turnstile tokens for %s before upstream work', async (accept) => {
+    const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    const response = await onRequestPost({ request: new Request(request().url, { method: 'POST', headers: { Accept: 'text/html', Origin: 'https://pursafe.example', 'CF-Connecting-IP': '203.0.113.10' }, body: (() => { const form = new FormData(); form.set('email', 'cat@example.com'); form.set('beta_consent', 'yes'); return form; })() }), env: env() as never });
-    expect(response.status).toBe(303);
-    expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=registered');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const testEnv = env();
+    const form = new FormData();
+    form.set('email', 'cat@example.com');
+    form.set('beta_consent', 'yes');
+    const response = await onRequestPost({
+      request: new Request(request().url, {
+        method: 'POST',
+        headers: { Accept: accept, Origin: 'https://pursafe.example', 'CF-Connecting-IP': '203.0.113.10' },
+        body: form,
+      }),
+      env: testEnv as never,
+    });
+    expect(response.status).toBe(accept === 'text/html' ? 303 : 400);
+    if (accept === 'text/html') expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=error');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(testEnv.RATE_LIMITER.limit).not.toHaveBeenCalled();
   });
 });
 
