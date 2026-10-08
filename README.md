@@ -21,6 +21,8 @@ npm run preview
 
 ## Deployment
 
+Branching, approval, and merge rules live in [docs/branching.md](docs/branching.md): one branch per Paperclip issue, an approval pins a SHA, and follow-up work opens a new branch and a new PR. `.github/workflows/branch-policy.yml` enforces them on every PR.
+
 Pull requests and pushes to `main` run `npm run check` and `npm run build`. A manual, protected GitHub Actions dispatch deploys `dist` to Cloudflare Pages with `wrangler`. Configure the `cloudflare-pages` environment with `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and the `CLOUDFLARE_PAGES_PROJECT` variable before enabling deployment.
 
 The Pages Functions beta flow requires D1 `DB`, the Wrangler-configured Cloudflare Rate Limiting binding `RATE_LIMITER`, and these environment values: `TURNSTILE_SECRET`, `TURNSTILE_HOSTNAME`, `TURNSTILE_ACTION`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `PUBLIC_SITE_URL`, and `ALLOWED_ORIGINS`. Public build value: `PUBLIC_TURNSTILE_SITE_KEY`. Turnstile `hostname` and `action` claims must match the configured values; Turnstile success is not a quota. Turnstile verification runs before quota counters are consumed. `RATE_LIMITER` uses one global key with a 100-request/60-second platform window, while D1 applies a bounded global application quota plus a per-client quota and prunes expired rows before each request.

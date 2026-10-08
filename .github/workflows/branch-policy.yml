@@ -1,0 +1,63 @@
+name: Branch and approval policy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled, edited]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Branch name is owned by exactly one Paperclip issue
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: bash .github/policy/branch-name.sh "$BRANCH" "$TITLE" "$BODY"
+
+      - name: Approved head must not advance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -euo pipefail
+          if printf '%s' "$LABELS" | grep -q '"approval-lock-override"'; then
+            echo "::warning::approval-lock-override label present; skipping head-advance check"
+            exit 0
+          fi
+          # --paginate emits each page, --jq '.[]' flattens them to a stream of
+          # review objects, and `jq -s` slurps that stream back into one array.
+          # (Avoids --slurp, which wraps pages as an array of arrays.)
+          stale=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" --jq '.[]' \
+            | jq -s -r -f .github/policy/stale-approvals.jq)
+          if [ -n "$stale" ]; then
+            echo "::error::approved head advanced to $HEAD_SHA; approval(s) are now stale:"
+            printf '%s\n' "$stale" | sed 's/^/  - /'
+            echo "Per standing policy: do not push to an approved branch."
+            echo "Open a NEW branch at the approved commit and a NEW PR; land follow-up work separately."
+            exit 1
+          fi
+          echo "no stale approvals against $HEAD_SHA"
+
+  # Proves the two checks above still fire, on every PR, against fixtures taken
+  # from real API payloads. Without this a regression in the filter is silent:
+  # a broken policy check looks exactly like a compliant PR.
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Policy self-test
+        run: bash .github/policy/selftest.sh
