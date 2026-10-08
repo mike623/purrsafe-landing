@@ -15,8 +15,12 @@ const title = 'Unsubscribe from PurrSafe beta email';
       <p id="status">Updating…</p>
     </main>
     <script>
+      import { betaTokenFrom } from '../../lib/beta-token.ts';
+
       const status = document.querySelector('#status');
-      const token = new URLSearchParams(location.hash.slice(1)).get('token');
+      // Fragment is the contract; the query string is a defensive fallback.
+      // Either way the token is stripped from the address bar on the next line.
+      const token = betaTokenFrom(location, 'token');
       history.replaceState(null, '', location.pathname);
       const finish = async () => {
         if (!token) { if (status) status.textContent = 'Unsubscribe link is invalid or expired.'; return; }
