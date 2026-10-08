@@ -8,10 +8,12 @@ database_name = "purrsafe-beta"
 database_id = "cca9d9b1-9716-4356-a587-e77db40f67dd"
 migrations_dir = "migrations"
 
-[[ratelimits]]
-name = "RATE_LIMITER"
-namespace_id = "1001"
-simple = { limit = 100, period = 60 }
+# No [[ratelimits]] block: Pages Functions support only a subset of Workers
+# bindings and the Cloudflare Rate Limiting binding is not among them
+# (https://developers.cloudflare.com/pages/functions/bindings/). Declaring one
+# here produced no RATE_LIMITER in the deployed project, so every signup threw on
+# `env.RATE_LIMITER.limit` and returned a Cloudflare 1101. The beta quota is the
+# D1-backed global and per-client counter in functions/api/beta-waitlist.ts.
 
 [vars]
 PUBLIC_SITE_URL = "https://pursafe.selenasolutions.com"
