@@ -50,3 +50,36 @@ export const logMisconfiguration = (route: string, missing: readonly string[]): 
 export const logFailure = (route: string, stage: string, error: unknown): void => {
   console.error(`${route}: ${stage} failed: ${error instanceof Error ? error.message : 'unknown error'}`);
 };
+
+export const RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
+
+/** Marks a quota rejection so a caller can tell it apart from an unreadable counter. */
+export const RATE_LIMITED = 'rate_limited';
+
+export const clientKey = (request: Request): string => request.headers.get('CF-Connecting-IP') ?? 'unknown';
+
+/**
+ * The quota a Pages deployment can actually enforce. Pages Functions support only
+ * a subset of Workers bindings and the Cloudflare Rate Limiting binding is not in
+ * it (https://developers.cloudflare.com/pages/functions/bindings/), so every
+ * metered route counts in D1. One copy of the upsert keeps the window semantics
+ * identical across routes; callers pass their own key and ceiling.
+ */
+export const assertRateLimit = async (db: D1Database, key: string, maxRequests: number): Promise<void> => {
+  const now = Math.floor(Date.now() / 1000);
+  const row = await db.prepare(`
+    INSERT INTO beta_registration_rate_limits (client_key, request_count, window_started_at)
+    VALUES (?1, 1, ?2)
+    ON CONFLICT(client_key) DO UPDATE SET
+      request_count = CASE WHEN ?2 - window_started_at >= ?3 THEN 1 ELSE request_count + 1 END,
+      window_started_at = CASE WHEN ?2 - window_started_at >= ?3 THEN ?2 ELSE window_started_at END
+    RETURNING request_count
+  `).bind(key, now, RATE_LIMIT_WINDOW_SECONDS).first<{ request_count: number }>();
+  if (!row || row.request_count > maxRequests) {
+    throw new Error(RATE_LIMITED);
+  }
+};
+
+export const pruneRateLimits = async (db: D1Database, now: number): Promise<void> => {
+  await db.prepare('DELETE FROM beta_registration_rate_limits WHERE window_started_at < ?1').bind(now - RATE_LIMIT_WINDOW_SECONDS * 2).run();
+};

@@ -323,6 +323,31 @@ import Layout from '../layouts/Layout.astro';
   const form = document.querySelector('.waitlist');
   const status = form?.querySelector('.form-status');
   const betaResult = new URLSearchParams(location.search).get('beta');
+
+  // Funnel instrumentation. The payload carries the event name and nothing
+  // else — no email, no form contents — and a failure is swallowed so
+  // analytics can never break signup.
+  const track = (eventName: string) => {
+    void fetch('/api/beta-waitlist/event', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ event_name: eventName }),
+      keepalive: true,
+    }).catch(() => {});
+  };
+
+  track('beta_page_view');
+
+  for (const cta of document.querySelectorAll('a[href="#get"]')) {
+    cta.addEventListener('click', () => track('beta_cta_click'));
+  }
+
+  let formStarted = false;
+  form?.addEventListener('focusin', () => {
+    if (formStarted) return;
+    formStarted = true;
+    track('beta_form_started');
+  });
   if (status && betaResult) {
     status.textContent = ({ registered: 'Thanks — check your email for your beta confirmation.', error: 'Unable to join right now. Please try again.' } as Record<string, string>)[betaResult] ?? '';
     history.replaceState(null, '', `${location.pathname}${location.hash}`);

@@ -1,4 +1,4 @@
-import { logFailure, logMisconfiguration, missingEnv, type D1Database } from './beta-waitlist/_shared.js';
+import { assertRateLimit, clientKey, logFailure, logMisconfiguration, missingEnv, pruneRateLimits, RATE_LIMITED, type D1Database } from './beta-waitlist/_shared.js';
 
 interface Env {
   DB: D1Database;
@@ -20,7 +20,6 @@ interface Env {
 
 type Context = { request: Request; env: Env };
 const ROUTE = 'beta-waitlist';
-const RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
 const RATE_LIMIT_MAX_REQUESTS = 5;
 const GLOBAL_RATE_LIMIT_KEY = 'beta-waitlist:global';
 const GLOBAL_RATE_LIMIT_MAX_REQUESTS = 100;
@@ -61,27 +60,6 @@ const originFor = (request: Request, env: Env) => {
   // request instead of throwing out of the preflight handler.
   const allowed = (env?.ALLOWED_ORIGINS ?? env?.PUBLIC_SITE_URL ?? '').split(',').map((value) => value.trim());
   return origin && allowed.includes(origin) ? origin : undefined;
-};
-
-const clientKey = (request: Request) => request.headers.get('CF-Connecting-IP') ?? 'unknown';
-
-const assertRateLimit = async (db: D1Database, key: string, maxRequests: number) => {
-  const now = Math.floor(Date.now() / 1000);
-  const row = await db.prepare(`
-    INSERT INTO beta_registration_rate_limits (client_key, request_count, window_started_at)
-    VALUES (?1, 1, ?2)
-    ON CONFLICT(client_key) DO UPDATE SET
-      request_count = CASE WHEN ?2 - window_started_at >= ?3 THEN 1 ELSE request_count + 1 END,
-      window_started_at = CASE WHEN ?2 - window_started_at >= ?3 THEN ?2 ELSE window_started_at END
-    RETURNING request_count
-  `).bind(key, now, RATE_LIMIT_WINDOW_SECONDS).first<{ request_count: number }>();
-  if (!row || row.request_count > maxRequests) {
-    throw new Error('rate_limited');
-  }
-};
-
-const pruneRateLimits = async (db: D1Database, now: number) => {
-  await db.prepare('DELETE FROM beta_registration_rate_limits WHERE window_started_at < ?1').bind(now - RATE_LIMIT_WINDOW_SECONDS * 2).run();
 };
 
 const callSupabase = async (env: Env, body: Record<string, unknown>) => fetch(`${env.SUPABASE_URL.replace(/\/$/, '')}/functions/v1/beta-waitlist`, {
@@ -148,14 +126,14 @@ export const onRequestPost = async ({ request, env }: Context) => {
     // Optional by platform, not by policy: see the RATE_LIMITER note on Env.
     if (env.RATE_LIMITER) {
       const platformLimit = await env.RATE_LIMITER.limit({ key: GLOBAL_RATE_LIMIT_KEY });
-      if (!platformLimit.success) throw new Error('rate_limited');
+      if (!platformLimit.success) throw new Error(RATE_LIMITED);
     }
     const now = Math.floor(Date.now() / 1000);
     await pruneRateLimits(env.DB, now);
     await assertRateLimit(env.DB, GLOBAL_RATE_LIMIT_KEY, GLOBAL_RATE_LIMIT_MAX_REQUESTS);
     await assertRateLimit(env.DB, `client:${clientKey(request)}`, RATE_LIMIT_MAX_REQUESTS);
   } catch (error) {
-    if (error instanceof Error && error.message === 'rate_limited') return wantsHtml(request)
+    if (error instanceof Error && error.message === RATE_LIMITED) return wantsHtml(request)
       ? browserRedirect(env, 'error')
       : json({ message: 'Too many attempts. Try again later.' }, 429, origin);
     // D1 carries the only quota this deployment can enforce, so an unreadable
