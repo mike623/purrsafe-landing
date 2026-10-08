@@ -9,7 +9,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify:dist": "node scripts/verify-dist.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.0"

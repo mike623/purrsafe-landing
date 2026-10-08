@@ -15,8 +15,12 @@ const title = 'Confirm your PurrSafe beta signup';
       <p id="status">Confirming…</p>
     </main>
     <script>
+      import { betaTokenFrom } from '../lib/beta-token.ts';
+
       const status = document.querySelector('#status');
-      const token = new URLSearchParams(location.hash.slice(1)).get('confirm');
+      // Fragment is the contract; the query string is a defensive fallback.
+      // Either way the token is stripped from the address bar on the next line.
+      const token = betaTokenFrom(location, 'confirm');
       history.replaceState(null, '', location.pathname);
       const finish = async () => {
         if (!token) { if (status) status.textContent = 'Confirmation link is invalid or expired.'; return; }
