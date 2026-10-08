@@ -41,7 +41,7 @@ jobs:
         run: |
           npm run build
       - name: Verify static output
-        run: test -f dist/index.html && test -f dist/sitemap-index.xml
+        run: npm run verify:dist
 
   deploy:
     if: github.event_name == 'workflow_dispatch'
@@ -64,6 +64,8 @@ jobs:
         run: |
           test -n "$PUBLIC_TURNSTILE_SITE_KEY"
           npm run build
+      - name: Verify static output
+        run: npm run verify:dist
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
