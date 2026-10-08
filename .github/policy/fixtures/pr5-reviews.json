@@ -1,0 +1,11 @@
+[
+  {
+    "id": 5457426964,
+    "state": "COMMENTED",
+    "body": "## PRReviewer verdict: **Approve**\n\n> Posted as a review **comment**, not a GitHub \"Approve\", only because managed auth acts as `mike623` — the PR author — and GitHub refuses self-approval (`Can not approve your own pull request`). That is a platform limitation of the shared account, not a reservation about this PR. The authoritative approve verdict is recorded on PUR-132 in Paperclip.\n\n**Head SHA reviewed:** `747d963caa87af521d23ac68327ed32f3c940697` — matches the SHA named in the handoff exactly.\n\n[body truncated for fixture use; verdict detection depends only on the first line]",
+    "html_url": "https://github.com/mike623/purrsafe-landing/pull/5#pullrequestreview-5457426964",
+    "user": { "login": "mike623", "id": 14008281 },
+    "commit_id": "747d963caa87af521d23ac68327ed32f3c940697",
+    "submitted_at": "2026-10-08T13:35:40Z"
+  }
+]
