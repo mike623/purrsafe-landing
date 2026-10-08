@@ -2,7 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { onRequestPost } from '../functions/api/beta-waitlist.js';
 import { onRequestGet as verifyGet, onRequestPost as verifyPost } from '../functions/api/beta-waitlist/verify.js';
 import { onRequestGet as unsubscribeGet, onRequestPost as unsubscribePost } from '../functions/api/beta-waitlist/unsubscribe.js';
-import { type D1Database, type D1Statement, type WaitlistEnv } from '../functions/api/beta-waitlist/_shared.js';
+import { readFileSync } from 'node:fs';
+import {
+  BETA_WAITLIST_TURNSTILE_ACTION,
+  TURNSTILE_TOKEN_MAX_LENGTH,
+  type D1Database,
+  type D1Statement,
+  type WaitlistEnv,
+} from '../functions/api/beta-waitlist/_shared.js';
 
 type TestEnv = WaitlistEnv & {
   DB: D1Database;
@@ -45,12 +52,12 @@ const env = (db = database(), platformAllowed = true): TestEnv => ({
   ALLOWED_ORIGINS: 'https://pursafe.example',
 });
 
-function request(ip = '203.0.113.10') {
+function request(ip = '203.0.113.10', token = 'turnstile-token') {
   const form = new FormData();
   form.set('email', 'cat@example.com');
   form.set('beta_consent', 'yes');
   form.set('research_opt_in', 'no');
-  form.set('cf-turnstile-response', 'turnstile-token');
+  form.set('cf-turnstile-response', token);
   return new Request('https://pursafe.example/api/beta-waitlist', { method: 'POST', headers: { Accept: 'application/json', Origin: 'https://pursafe.example', 'CF-Connecting-IP': ip }, body: form });
 }
 
@@ -116,6 +123,177 @@ describe('beta waitlist abuse boundary', () => {
     if (accept === 'text/html') expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=error');
     expect(fetchMock).not.toHaveBeenCalled();
     expect(testEnv.RATE_LIMITER.limit).not.toHaveBeenCalled();
+  });
+});
+
+const siteverifyCall = (fetchMock: ReturnType<typeof vi.fn>) => {
+  const call = fetchMock.mock.calls.find(([url]) => String(url).includes('siteverify'));
+  if (!call) throw new Error('siteverify was not called');
+  const init = call[1] as RequestInit;
+  return { url: String(call[0]), init, body: new URLSearchParams(String(init.body)) };
+};
+
+const siteverifyOnly = (payload: Response | Error) => {
+  const mock = vi.fn().mockImplementation((url: string) => {
+    if (!url.includes('siteverify')) return supabaseSuccess();
+    return payload instanceof Error ? Promise.reject(payload) : Promise.resolve(payload);
+  });
+  vi.stubGlobal('fetch', mock);
+  return mock;
+};
+
+describe('turnstile verification', () => {
+  it('accepts an exact success/action/hostname match and posts a canonical siteverify request', async () => {
+    const fetchMock = siteverifyOnly(turnstileSuccess());
+    const response = await onRequestPost({ request: request(), env: env() as never });
+    expect(response.status).toBe(202);
+
+    const { url, init, body } = siteverifyCall(fetchMock);
+    expect(url).toBe('https://challenges.cloudflare.com/turnstile/v0/siteverify');
+    expect(init.method).toBe('POST');
+    expect(new Headers(init.headers).get('content-type')).toBe('application/x-www-form-urlencoded');
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+    expect(Object.fromEntries(body)).toEqual({
+      secret: 'turnstile-secret',
+      response: 'turnstile-token',
+      remoteip: '203.0.113.10',
+    });
+  });
+
+  it('uses the shared beta_waitlist action when TURNSTILE_ACTION is unset', async () => {
+    const fetchMock = siteverifyOnly(new Response(JSON.stringify({ success: true, hostname: 'pursafe.example', action: BETA_WAITLIST_TURNSTILE_ACTION })));
+    const testEnv = { ...env(), TURNSTILE_ACTION: '' };
+    const response = await onRequestPost({ request: request(), env: testEnv as never });
+    expect(response.status).toBe(202);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects an action mismatch without touching Supabase', async () => {
+    const fetchMock = siteverifyOnly(new Response(JSON.stringify({ success: true, hostname: 'pursafe.example', action: 'contact' })));
+    const response = await onRequestPost({ request: request(), env: env() as never });
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ message: 'Verification failed. Try again.' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a hostname mismatch without touching Supabase', async () => {
+    const fetchMock = siteverifyOnly(new Response(JSON.stringify({ success: true, hostname: 'localhost', action: 'beta_waitlist' })));
+    const response = await onRequestPost({ request: request(), env: env() as never });
+    expect(response.status).toBe(400);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['string', 'true'],
+    ['number', 1],
+    ['object', {}],
+    ['null', null],
+    ['absent', undefined],
+  ])('rejects a non-boolean %s success claim', async (_label, success) => {
+    const fetchMock = siteverifyOnly(new Response(JSON.stringify({ success, hostname: 'pursafe.example', action: 'beta_waitlist' })));
+    const response = await onRequestPost({ request: request(), env: env() as never });
+    expect(response.status).toBe(400);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a replayed token with the generic verification failure', async () => {
+    const fetchMock = siteverifyOnly(new Response(JSON.stringify({ success: false, 'error-codes': ['timeout-or-duplicate'] })));
+    const response = await onRequestPost({ request: request(), env: env() as never });
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ message: 'Verification failed. Try again.' });
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('verifies a maximum-length token upstream', async () => {
+    const fetchMock = siteverifyOnly(turnstileSuccess());
+    const token = 'x'.repeat(TURNSTILE_TOKEN_MAX_LENGTH);
+    const response = await onRequestPost({ request: request('203.0.113.11', token), env: env() as never });
+    expect(response.status).toBe(202);
+    expect(siteverifyCall(fetchMock).body.get('response')).toBe(token);
+  });
+
+  it('rejects an oversized token before any upstream call', async () => {
+    const fetchMock = siteverifyOnly(turnstileSuccess());
+    const testEnv = env();
+    const response = await onRequestPost({ request: request('203.0.113.12', 'x'.repeat(TURNSTILE_TOKEN_MAX_LENGTH + 1)), env: testEnv as never });
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ message: 'Enter a valid email, accept beta consent, and complete verification.' });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(testEnv.RATE_LIMITER.limit).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['TURNSTILE_SECRET', { TURNSTILE_SECRET: '' }],
+    ['TURNSTILE_SECRET whitespace', { TURNSTILE_SECRET: '   ' }],
+    ['TURNSTILE_HOSTNAME', { TURNSTILE_HOSTNAME: '' }],
+  ])('fails closed when %s is missing, without calling siteverify', async (_label, overrides) => {
+    const fetchMock = siteverifyOnly(turnstileSuccess());
+    const testEnv = { ...env(), ...overrides };
+    const response = await onRequestPost({ request: request(), env: testEnv as never });
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ message: 'Verification failed. Try again.' });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['a 500 from siteverify', new Response('upstream boom', { status: 500 })],
+    ['a 403 from siteverify', new Response(JSON.stringify({ success: true, hostname: 'pursafe.example', action: 'beta_waitlist' }), { status: 403 })],
+    ['an unparseable siteverify body', new Response('<html>not json</html>', { status: 200 })],
+    ['a non-object siteverify body', new Response('"ok"', { status: 200 })],
+    ['a network error', new TypeError('network down')],
+    ['a siteverify timeout', Object.assign(new Error('The operation was aborted due to timeout'), { name: 'TimeoutError' })],
+  ])('fails closed on %s', async (_label, outcome) => {
+    const fetchMock = siteverifyOnly(outcome);
+    const response = await onRequestPost({ request: request(), env: env() as never });
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({ message: 'Verification failed. Try again.' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('redirects the HTML fallback instead of leaking a verification failure body', async () => {
+    siteverifyOnly(new Response(JSON.stringify({ success: false })));
+    const form = new FormData();
+    form.set('email', 'cat@example.com');
+    form.set('beta_consent', 'yes');
+    form.set('cf-turnstile-response', 'turnstile-token');
+    const response = await onRequestPost({
+      request: new Request('https://pursafe.example/api/beta-waitlist', {
+        method: 'POST',
+        headers: { Accept: 'text/html', Origin: 'https://pursafe.example', 'CF-Connecting-IP': '203.0.113.13' },
+        body: form,
+      }),
+      env: env() as never,
+    });
+    expect(response.status).toBe(303);
+    expect(response.headers.get('location')).toBe('https://pursafe.example/?beta=error');
+  });
+});
+
+describe('turnstile client lifecycle', () => {
+  const page = readFileSync(new URL('../src/pages/index.astro', import.meta.url), 'utf8');
+
+  it('sends the same action the server requires', () => {
+    expect(page).toContain("import { BETA_WAITLIST_TURNSTILE_ACTION } from '../../functions/api/beta-waitlist/_shared'");
+    expect(page).toContain('data-action={BETA_WAITLIST_TURNSTILE_ACTION}');
+    expect(BETA_WAITLIST_TURNSTILE_ACTION).toBe('beta_waitlist');
+  });
+
+  it('renders the widget explicitly and retains its ID', () => {
+    expect(page).toContain('turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback');
+    expect(page).toMatch(/widgetId = window\.turnstile\.render\(/);
+    expect(page).toContain('window.turnstile?.reset(widgetId)');
+  });
+
+  it('resets the widget after every AJAX attempt and on expiry or timeout', () => {
+    expect(page).toMatch(/} finally \{[\s\S]*resetWidget\(\);[\s\S]*\}/);
+    expect(page).toContain("'expired-callback': resetWidget");
+    expect(page).toContain("'timeout-callback': resetWidget");
+  });
+
+  it('blocks a submit that has no fresh token instead of replaying one', () => {
+    expect(page).toContain('window.turnstile?.getResponse(widgetId)');
+    expect(page).toContain('Complete the verification check, then try again.');
   });
 });
 

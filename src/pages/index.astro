@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { BETA_WAITLIST_TURNSTILE_ACTION } from '../../functions/api/beta-waitlist/_shared';
 ---
 
 <Layout>
@@ -278,8 +279,13 @@ import Layout from '../layouts/Layout.astro';
             <input name="beta_consent" type="checkbox" value="yes" required>
             <span>I want to join the PurrSafe private beta and agree to the <a href="/privacy">privacy notice</a>.</span>
           </label>
-          <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''}></div>
-          <noscript><p class="meta">JavaScript is optional. No-JS submissions use stricter server-side rate limits.</p></noscript>
+          <div
+            id="waitlist-turnstile"
+            class="cf-turnstile"
+            data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''}
+            data-action={BETA_WAITLIST_TURNSTILE_ACTION}
+          ></div>
+          <noscript><p class="meta">JavaScript is required to complete the verification check before joining the beta.</p></noscript>
           <button class="btn btn--primary" type="submit">Get the app</button>
           <p id="form-status" class="form-status meta" role="status" aria-live="polite"></p>
         </form>
@@ -318,8 +324,28 @@ import Layout from '../layouts/Layout.astro';
   </div>
 </section>
 
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback" async defer></script>
 <script>
+  interface TurnstileRenderOptions {
+    sitekey: string;
+    action?: string;
+    'error-callback'?: () => void;
+    'expired-callback'?: () => void;
+    'timeout-callback'?: () => void;
+  }
+  interface TurnstileApi {
+    ready(callback: () => void): void;
+    render(container: HTMLElement, options: TurnstileRenderOptions): string | undefined;
+    reset(widgetId?: string): void;
+    getResponse(widgetId?: string): string | undefined;
+  }
+  declare global {
+    interface Window {
+      turnstile?: TurnstileApi;
+      onloadTurnstileCallback?: () => void;
+    }
+  }
+
   const form = document.querySelector('.waitlist');
   const status = form?.querySelector('.form-status');
   const betaResult = new URLSearchParams(location.search).get('beta');
@@ -327,12 +353,54 @@ import Layout from '../layouts/Layout.astro';
     status.textContent = ({ registered: 'Thanks — check your email for your beta confirmation.', error: 'Unable to join right now. Please try again.' } as Record<string, string>)[betaResult] ?? '';
     history.replaceState(null, '', `${location.pathname}${location.hash}`);
   }
+
+  // Turnstile tokens are single-use. This page stays open after an AJAX submit, so the
+  // widget is rendered explicitly and its ID is retained for reset() — otherwise every
+  // retry replays a token that siteverify has already redeemed.
+  const widgetContainer = document.getElementById('waitlist-turnstile');
+  let widgetId: string | undefined;
+
+  const resetWidget = () => {
+    if (widgetId !== undefined) window.turnstile?.reset(widgetId);
+  };
+
+  const setStatus = (message: string, isError: boolean) => {
+    if (!(status instanceof HTMLElement)) return;
+    status.setAttribute('role', isError ? 'alert' : 'status');
+    status.textContent = message;
+  };
+
+  const renderWidget = () => {
+    if (!(widgetContainer instanceof HTMLElement) || !window.turnstile) return;
+    const sitekey = widgetContainer.dataset.sitekey;
+    if (!sitekey) return;
+    widgetId = window.turnstile.render(widgetContainer, {
+      sitekey,
+      action: widgetContainer.dataset.action,
+      // The widget surfaces its own retry affordance on an error, so only the message is
+      // ours; resetting here would fight that retry loop.
+      'error-callback': () => setStatus('Verification could not load. Please retry the check.', true),
+      'expired-callback': resetWidget,
+      'timeout-callback': resetWidget,
+    });
+  };
+
+  if (window.turnstile) window.turnstile.ready(renderWidget);
+  else window.onloadTurnstileCallback = () => window.turnstile?.ready(renderWidget);
+
+  let submitting = false;
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!(form instanceof HTMLFormElement) || !(status instanceof HTMLElement)) return;
+    if (submitting) return;
     const email = form.querySelector('#email');
-    status.setAttribute('role', 'status');
-    status.textContent = 'Submitting…';
+    const token = window.turnstile?.getResponse(widgetId) ?? '';
+    if (!token) {
+      setStatus('Complete the verification check, then try again.', true);
+      return;
+    }
+    submitting = true;
+    setStatus('Submitting…', false);
     if (email instanceof HTMLInputElement) email.setAttribute('aria-invalid', 'false');
     try {
       const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
@@ -345,6 +413,10 @@ import Layout from '../layouts/Layout.astro';
     } catch {
       status.setAttribute('role', 'alert');
       status.textContent = 'Unable to submit right now. Try again.';
+    } finally {
+      // The token was redeemed (or lost) by this attempt either way.
+      resetWidget();
+      submitting = false;
     }
   });
 </script>
