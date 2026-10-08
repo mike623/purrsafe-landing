@@ -13,7 +13,7 @@ type TestEnv = WaitlistEnv & {
   ALLOWED_ORIGINS: string;
 };
 
-const turnstileSuccess = () => new Response(JSON.stringify({ success: true, hostname: 'pursafe.example', action: 'beta_waitlist' }));
+const turnstileSuccess = () => new Response(JSON.stringify({ success: true, hostname: 'pursafe.example', action: 'beta-waitlist' }));
 const supabaseSuccess = (body: Record<string, unknown> = { success: true }) => new Response(JSON.stringify(body), { status: 200 });
 
 function database(start = 0) {
@@ -41,7 +41,7 @@ const env = (db = database(), platformAllowed = true): TestEnv => ({
   SUPABASE_ANON_KEY: 'anon-key',
   TURNSTILE_SECRET: 'turnstile-secret',
   TURNSTILE_HOSTNAME: 'pursafe.example',
-  TURNSTILE_ACTION: 'beta_waitlist',
+  TURNSTILE_ACTION: 'beta-waitlist',
   ALLOWED_ORIGINS: 'https://pursafe.example',
 });
 

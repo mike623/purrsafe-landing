@@ -278,7 +278,7 @@ import Layout from '../layouts/Layout.astro';
             <input name="beta_consent" type="checkbox" value="yes" required>
             <span>I want to join the PurrSafe private beta and agree to the <a href="/privacy">privacy notice</a>.</span>
           </label>
-          <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''}></div>
+          <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''} data-action="beta-waitlist"></div>
           <noscript><p class="meta">JavaScript is optional. No-JS submissions use stricter server-side rate limits.</p></noscript>
           <button class="btn btn--primary" type="submit">Get the app</button>
           <p id="form-status" class="form-status meta" role="status" aria-live="polite"></p>
