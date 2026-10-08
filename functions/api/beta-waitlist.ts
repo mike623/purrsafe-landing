@@ -1,11 +1,15 @@
-import type { D1Database } from './beta-waitlist/_shared.js';
+import {
+  BETA_WAITLIST_TURNSTILE_ACTION,
+  isUsableTurnstileToken,
+  type D1Database,
+} from './beta-waitlist/_shared.js';
 
 interface Env {
   DB: D1Database;
   RATE_LIMITER: { limit(input: { key: string }): Promise<{ success: boolean }> };
   TURNSTILE_SECRET: string;
   TURNSTILE_HOSTNAME: string;
-  TURNSTILE_ACTION: string;
+  TURNSTILE_ACTION?: string;
   SUPABASE_URL: string;
   SUPABASE_ANON_KEY: string;
   PUBLIC_SITE_URL: string;
@@ -17,6 +21,8 @@ const RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
 const RATE_LIMIT_MAX_REQUESTS = 5;
 const GLOBAL_RATE_LIMIT_KEY = 'beta-waitlist:global';
 const GLOBAL_RATE_LIMIT_MAX_REQUESTS = 100;
+const TURNSTILE_SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+const TURNSTILE_SITEVERIFY_TIMEOUT_MS = 10_000;
 
 const json = (body: Record<string, unknown>, status = 200, origin?: string) =>
   new Response(JSON.stringify(body), {
@@ -73,6 +79,44 @@ const pruneRateLimits = async (db: D1Database, now: number) => {
   await db.prepare('DELETE FROM beta_registration_rate_limits WHERE window_started_at < ?1').bind(now - RATE_LIMIT_WINDOW_SECONDS * 2).run();
 };
 
+const trimmed = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+
+/**
+ * Canonical Turnstile siteverify. Fails closed on every uncertain outcome: missing
+ * configuration, an unusable token, a timeout, a non-2xx response, an unparseable body,
+ * a network error, a non-boolean `success`, or an action/hostname that is not an exact
+ * match for this deployment.
+ */
+const verifyTurnstile = async (env: Env, token: unknown, remoteip: string): Promise<boolean> => {
+  const secret = trimmed(env.TURNSTILE_SECRET);
+  const expectedHostname = trimmed(env.TURNSTILE_HOSTNAME);
+  const expectedAction = trimmed(env.TURNSTILE_ACTION) || BETA_WAITLIST_TURNSTILE_ACTION;
+  if (!secret || !expectedHostname || !isUsableTurnstileToken(token)) return false;
+
+  const body = new URLSearchParams({ secret, response: token });
+  if (remoteip) body.set('remoteip', remoteip);
+
+  let payload: unknown;
+  try {
+    const response = await fetch(TURNSTILE_SITEVERIFY_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      signal: AbortSignal.timeout(TURNSTILE_SITEVERIFY_TIMEOUT_MS),
+      body,
+    });
+    if (!response.ok) return false;
+    payload = await response.json();
+  } catch {
+    return false;
+  }
+
+  if (!payload || typeof payload !== 'object') return false;
+  const result = payload as { success?: unknown; hostname?: unknown; action?: unknown };
+  return result.success === true
+    && result.action === expectedAction
+    && result.hostname === expectedHostname;
+};
+
 const callSupabase = async (env: Env, body: Record<string, unknown>) => fetch(`${env.SUPABASE_URL.replace(/\/$/, '')}/functions/v1/beta-waitlist`, {
   method: 'POST',
   headers: { apikey: env.SUPABASE_ANON_KEY, authorization: `Bearer ${env.SUPABASE_ANON_KEY}`, 'content-type': 'application/json' },
@@ -91,16 +135,15 @@ export const onRequestPost = async ({ request, env }: Context) => {
   const betaConsent = form.get('beta_consent') === 'yes';
   const turnstileToken = String(form.get('cf-turnstile-response') ?? '');
   const htmlFallback = wantsHtml(request);
-  if (!/^\S+@\S+\.\S+$/.test(email) || !betaConsent || !turnstileToken) {
+  if (!/^\S+@\S+\.\S+$/.test(email) || !betaConsent || !isUsableTurnstileToken(turnstileToken)) {
     return htmlFallback
       ? browserRedirect(env, 'error')
       : json({ message: 'Enter a valid email, accept beta consent, and complete verification.' }, 400, origin);
   }
 
-  if (turnstileToken) {
-    const verification = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: turnstileToken, remoteip: request.headers.get('CF-Connecting-IP') ?? '' }) });
-    const verificationResult = await verification.json() as { success?: boolean; hostname?: string; action?: string };
-    if (!verificationResult.success || verificationResult.hostname !== env.TURNSTILE_HOSTNAME || verificationResult.action !== env.TURNSTILE_ACTION) return htmlFallback
+  const verified = await verifyTurnstile(env, turnstileToken, request.headers.get('CF-Connecting-IP') ?? '');
+  if (!verified) {
+    return htmlFallback
       ? browserRedirect(env, 'error')
       : json({ message: 'Verification failed. Try again.' }, 400, origin);
   }
